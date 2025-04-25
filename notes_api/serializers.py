@@ -72,11 +72,20 @@ class NoteSerializer(serializers.ModelSerializer):
         # Handle tag names if provided
         tag_names = validated_data.pop('tag_names', [])
         
+        # Проверяем, является ли это частичным обновлением только для поля folder
+        is_only_folder_update = len(validated_data) == 1 and 'folder' in validated_data
+        
         # Update the note
         note = super().update(instance, validated_data)
         
         # Create tags if they don't exist and add to note
         if tag_names:
+            # Если это только обновление папки, не меняем теги
+            if not is_only_folder_update:
+                # Сначала очистим существующие теги, если это полное обновление
+                note.tags.clear()
+                
+            # Добавляем новые теги
             for tag_name in tag_names:
                 tag, created = Tag.objects.get_or_create(
                     name=tag_name,

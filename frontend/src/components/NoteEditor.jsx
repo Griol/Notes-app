@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { TextField, Button, Box, Chip, Autocomplete, Paper, Typography } from '@mui/material';
-import { getNote, createNote, updateNote, getTags } from '../api/notesApi';
+import { TextField, Button, Box, Chip, Autocomplete, Paper, Typography, FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material';
+import { getNote, createNote, updateNote, getTags, getFolders } from '../api/notesApi';
 
 const NoteEditor = () => {
   const { id } = useParams();
@@ -13,6 +13,7 @@ const NoteEditor = () => {
     tag_names: []
   });
   const [allTags, setAllTags] = useState([]);
+  const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -27,7 +28,18 @@ const NoteEditor = () => {
       }
     };
 
+    // Load all folders
+    const loadFolders = async () => {
+      try {
+        const response = await getFolders();
+        setFolders(response.data);
+      } catch (err) {
+        console.error('Error loading folders:', err);
+      }
+    };
+
     loadTags();
+    loadFolders();
 
     // If editing an existing note, fetch its data
     if (id) {
@@ -57,6 +69,11 @@ const NoteEditor = () => {
 
   const handleTagChange = (event, newValue) => {
     setNote(prev => ({ ...prev, tag_names: newValue }));
+  };
+
+  const handleFolderChange = (e) => {
+    const folderId = e.target.value === '' ? null : e.target.value;
+    setNote(prev => ({ ...prev, folder: folderId }));
   };
 
   const handleSubmit = async (e) => {
@@ -123,6 +140,28 @@ const NoteEditor = () => {
           multiline
           rows={10}
         />
+        
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="folder-label">Folder</InputLabel>
+          <Select
+            labelId="folder-label"
+            id="folder"
+            name="folder"
+            value={note.folder || ''}
+            onChange={handleFolderChange}
+            label="Folder"
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            {folders.map((folder) => (
+              <MenuItem key={folder.id} value={folder.id}>
+                {folder.name}
+              </MenuItem>
+            ))}
+          </Select>
+          <FormHelperText>Select a folder for this note</FormHelperText>
+        </FormControl>
         
         <Autocomplete
           multiple

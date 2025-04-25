@@ -108,6 +108,10 @@ export const updateNote = (id, noteData) => {
   return api.put(`/notes/${id}/`, noteData);
 };
 
+export const patchNote = (id, noteData) => {
+  return api.patch(`/notes/${id}/`, noteData);
+};
+
 export const deleteNote = (id) => {
   return api.delete(`/notes/${id}/`);
 };

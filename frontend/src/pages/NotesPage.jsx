@@ -8,9 +8,11 @@ import {
 } from '@mui/material';
 import { 
   Add, Search, Folder as FolderIcon, Edit, Delete, MoreVert,
-  Sort, Article, Label, CalendarToday, Description, FilterList
+  Sort, Article, Label, CalendarToday, Description, FilterList,
+  DriveFileMove
 } from '@mui/icons-material';
 import { getNotes, deleteNote, getFolder, getTags } from '../api/notesApi';
+import MoveNoteDialog from '../components/MoveNoteDialog';
 
 const NotesPage = () => {
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ const NotesPage = () => {
   const [sortBy, setSortBy] = useState('updated_at');
   const [sortDirection, setSortDirection] = useState('desc');
   const [viewType, setViewType] = useState('all');
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
 
   // Determine page title based on URL
   const pageTitle = 
@@ -195,6 +198,16 @@ const NotesPage = () => {
     // Set view type based on tab
     const viewTypes = ['all', 'documents', 'folders', 'sources', 'tags', 'daily'];
     setViewType(viewTypes[newValue]);
+  };
+
+  const handleMoveNote = () => {
+    handleNoteMenuClose();
+    setMoveDialogOpen(true);
+  };
+
+  const handleMoveSuccess = () => {
+    // Refresh notes after successful move
+    fetchNotes();
   };
 
   const renderNoteCard = (note) => (
@@ -453,17 +466,23 @@ const NotesPage = () => {
         onClose={handleNoteMenuClose}
       >
         <MenuItem onClick={() => {
-          handleEditNote(selectedNote?.id);
           handleNoteMenuClose();
+          handleEditNote(selectedNote?.id);
         }}>
           <ListItemIcon>
             <Edit fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Edit" />
         </MenuItem>
+        <MenuItem onClick={handleMoveNote}>
+          <ListItemIcon>
+            <DriveFileMove fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Move to Folder" />
+        </MenuItem>
         <MenuItem onClick={handleDeleteNote}>
           <ListItemIcon>
-            <Delete fontSize="small" color="error" />
+            <Delete fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Delete" />
         </MenuItem>
@@ -500,6 +519,16 @@ const NotesPage = () => {
           )}
         </MenuItem>
       </Menu>
+      
+      {/* Move Note Dialog */}
+      {selectedNote && (
+        <MoveNoteDialog
+          open={moveDialogOpen}
+          onClose={() => setMoveDialogOpen(false)}
+          note={selectedNote}
+          onSuccess={handleMoveSuccess}
+        />
+      )}
     </Container>
   );
 };

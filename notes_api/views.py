@@ -57,6 +57,24 @@ class NoteViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         return Note.objects.filter(user=self.request.user).prefetch_related('tags').select_related('folder')
+    
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        instance = self.get_object()
+        
+        # Если обновляется только папка, обрабатываем специальным образом
+        if len(request.data) == 1 and 'folder' in request.data:
+            serializer = self.get_serializer(
+                instance, 
+                data=request.data, 
+                partial=True,
+                context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        
+        return super().partial_update(request, *args, **kwargs)
 
 
 class FolderStructureView(generics.GenericAPIView):
