@@ -37,9 +37,30 @@ class Note(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, related_name='notes')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    version = models.IntegerField(default=1)
 
     class Meta:
         ordering = ['-updated_at']
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:  # Если это обновление существующей записи
+            self.version += 1
+        super().save(*args, **kwargs)
+
+
+class NoteShare(models.Model):
+    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='shares')
+    shared_with = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shared_notes')
+    can_edit = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('note', 'shared_with')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.note.title} shared with {self.shared_with.username}"

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Используем прокси Vite, путь без хоста
-const API_URL = '/api';
+// Используем правильный URL для API
+const API_URL = 'http://localhost:8000/api';
 
 // Create axios instance with base URL and default headers
 const api = axios.create({
@@ -9,8 +9,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Для разработки отключаем credentials, чтобы избежать проблем с CORS
-  withCredentials: false
+  withCredentials: true
 });
 
 // Intercept requests to add authentication token
@@ -43,7 +42,6 @@ api.interceptors.response.use(
       
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        // Если нет refreshToken, перенаправляем на логин
         if (!refreshToken) {
           localStorage.removeItem('token');
           window.location.href = '/login';
@@ -56,11 +54,9 @@ api.interceptors.response.use(
         
         localStorage.setItem('token', response.data.access);
         
-        // Retry the original request with new token
         originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         window.location.href = '/login';
@@ -93,15 +89,33 @@ export const logoutUser = () => {
 
 // Note API calls
 export const getNotes = (params = {}) => {
-  return api.get('/notes/', { params });
+  console.log('Fetching notes with params:', params);
+  return api.get('/notes/', { params })
+    .then(response => {
+      console.log('Notes API response:', response.data);
+      return response;
+    })
+    .catch(error => {
+      console.error('Error fetching notes:', error);
+      throw error;
+    });
 };
 
 export const getNote = (id) => {
   return api.get(`/notes/${id}/`);
 };
 
-export const createNote = (noteData) => {
-  return api.post('/notes/', noteData);
+export const createNote = (note) => {
+  console.log('Creating note:', note);
+  return api.post('/notes/', note)
+    .then(response => {
+      console.log('Create note response:', response.data);
+      return response;
+    })
+    .catch(error => {
+      console.error('Error creating note:', error);
+      throw error;
+    });
 };
 
 export const updateNote = (id, noteData) => {
@@ -165,4 +179,78 @@ export const getFolderStructure = () => {
 
 export const getSidebar = () => {
   return api.get('/sidebar/');
+};
+
+// User API calls
+export const getUserByEmail = (email) => {
+  return api.get(`/users/`, { params: { email } })
+    .then(response => {
+      console.log('Get user by email response:', response.data);
+      if (response.data && response.data.length > 0) {
+        return response.data[0];
+      }
+      throw new Error('User not found');
+    })
+    .catch(error => {
+      console.error('Get user by email error:', error.response?.data);
+      throw error;
+    });
+};
+
+export const getUserByUsername = (username) => {
+  return api.get(`/users/`, { params: { username } })
+    .then(response => {
+      console.log('Get user by username response:', response.data);
+      if (response.data && response.data.length > 0) {
+        return response.data[0];
+      }
+      throw new Error('User not found');
+    })
+    .catch(error => {
+      console.error('Get user by username error:', error.response?.data);
+      throw error;
+    });
+};
+
+// Note sharing API calls
+export const shareNote = async (noteId, shareData) => {
+  try {
+    // Отправляем запрос на шаринг с логином
+    const requestData = {
+      shared_with: shareData.shared_with, // Отправляем логин напрямую
+      can_edit: shareData.can_edit
+    };
+
+    console.log('Sharing note:', noteId, 'with data:', requestData);
+    const response = await api.post(`/notes/${noteId}/share/`, requestData);
+    console.log('Share response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Share error:', error.response?.data);
+    throw error;
+  }
+};
+
+export const getNoteShares = (noteId) => {
+  return api.get(`/notes/${noteId}/shares/`)
+    .then(response => {
+      console.log('Get shares response:', response.data);
+      return response;
+    })
+    .catch(error => {
+      console.error('Get shares error:', error.response?.data);
+      throw error;
+    });
+};
+
+export const removeShare = (noteId, shareId) => {
+  return api.post(`/notes/${noteId}/shares/${shareId}/remove_access/`)
+    .then(response => {
+      console.log('Remove share response:', response.data);
+      return response;
+    })
+    .catch(error => {
+      console.error('Remove share error:', error.response?.data);
+      throw error;
+    });
 }; 

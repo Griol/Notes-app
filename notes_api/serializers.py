@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tag, Folder, Note
+from .models import Tag, Folder, Note, NoteShare
 from django.contrib.auth.models import User
 
 
@@ -27,65 +27,65 @@ class FolderSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class NoteShareSerializer(serializers.ModelSerializer):
+    shared_with_username = serializers.CharField(source='shared_with.username', read_only=True)
+    
+    class Meta:
+        model = NoteShare
+        fields = ['id', 'shared_with', 'shared_with_username', 'can_edit', 'created_at']
+        read_only_fields = ['created_at']
+
+
 class NoteSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, required=False, read_only=True)
-    tag_ids = serializers.PrimaryKeyRelatedField(
-        many=True, write_only=True, required=False, queryset=Tag.objects.all(), source='tags'
-    )
-    tag_names = serializers.ListField(
-        child=serializers.CharField(max_length=50),
-        write_only=True,
-        required=False
-    )
+    tags = TagSerializer(many=True, read_only=True)
+    tag_names = serializers.ListField(write_only=True, required=False)
+    folder_name = serializers.CharField(source='folder.name', read_only=True)
+    shares = NoteShareSerializer(many=True, read_only=True)
+    is_shared = serializers.SerializerMethodField()
+    version = serializers.IntegerField(read_only=True)
     
     class Meta:
         model = Note
-        fields = [
-            'id', 'title', 'content', 'folder', 'tags', 'tag_ids', 
-            'tag_names', 'created_at', 'updated_at'
-        ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
-
+        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 
+                 'tags', 'tag_names', 'folder', 'folder_name', 'shares', 
+                 'is_shared', 'version']
+        read_only_fields = ['created_at', 'updated_at', 'version']
+    
+    def get_is_shared(self, obj):
+        return obj.shares.exists()
+    
     def create(self, validated_data):
-        # Handle tag names if provided
         tag_names = validated_data.pop('tag_names', [])
+        note = Note.objects.create(**validated_data)
         
-        # Associate with current user
-        user = self.context['request'].user
-        validated_data['user'] = user
+        # Create tags
+        for tag_name in tag_names:
+            tag, created = Tag.objects.get_or_create(
+                name=tag_name,
+                user=self.context['request'].user
+            )
+            note.tags.add(tag)
         
-        # Create the note
-        note = super().create(validated_data)
-        
-        # Create tags if they don't exist and add to note
-        if tag_names:
-            for tag_name in tag_names:
-                tag, created = Tag.objects.get_or_create(
-                    name=tag_name,
-                    user=user
-                )
-                note.tags.add(tag)
-                
         return note
-
+    
     def update(self, instance, validated_data):
-        # Handle tag names if provided
-        tag_names = validated_data.pop('tag_names', [])
+        # Проверяем версию
+        current_version = instance.version
+        if 'version' in self.context.get('request').data:
+            client_version = self.context['request'].data['version']
+            if client_version != current_version:
+                raise serializers.ValidationError({
+                    'version': f'Note has been modified. Current version is {current_version}'
+                })
         
-        # Проверяем, является ли это частичным обновлением только для поля folder
-        is_only_folder_update = len(validated_data) == 1 and 'folder' in validated_data
+        tag_names = validated_data.pop('tag_names', [])
         
         # Update the note
         note = super().update(instance, validated_data)
         
-        # Create tags if they don't exist and add to note
+        # Update tags if provided
         if tag_names:
-            # Если это только обновление папки, не меняем теги
-            if not is_only_folder_update:
-                # Сначала очистим существующие теги, если это полное обновление
-                note.tags.clear()
-                
-            # Добавляем новые теги
+            note.tags.clear()
             for tag_name in tag_names:
                 tag, created = Tag.objects.get_or_create(
                     name=tag_name,

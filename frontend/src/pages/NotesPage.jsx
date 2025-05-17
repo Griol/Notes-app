@@ -48,7 +48,7 @@ const NotesPage = () => {
       try {
         // Load tags for filtering
         const tagsResponse = await getTags();
-        setAvailableTags(tagsResponse.data);
+        setAvailableTags(Array.isArray(tagsResponse.data) ? tagsResponse.data : []);
         
         // If we're viewing a folder, load the folder details
         if (folderId) {
@@ -66,6 +66,18 @@ const NotesPage = () => {
     };
     
     fetchData();
+
+    // Добавляем обработчик события обновления заметок
+    const handleNotesUpdated = () => {
+      fetchNotes();
+    };
+
+    window.addEventListener('notesUpdated', handleNotesUpdated);
+
+    // Очищаем обработчик при размонтировании компонента
+    return () => {
+      window.removeEventListener('notesUpdated', handleNotesUpdated);
+    };
   }, [folderId, location.search]);
 
   const fetchNotes = async () => {
@@ -87,8 +99,11 @@ const NotesPage = () => {
       
       const response = await getNotes(params);
       
+      // Получаем заметки из results, если они есть
+      const notesData = response.data.results || [];
+      
       // Sort notes based on current sort settings
-      let sortedNotes = [...response.data];
+      let sortedNotes = [...notesData];
       sortedNotes.sort((a, b) => {
         // Handle date fields
         if (['created_at', 'updated_at'].includes(sortBy)) {
@@ -110,6 +125,7 @@ const NotesPage = () => {
       setNotes(sortedNotes);
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching notes:', err);
       setError('Failed to load notes');
       setLoading(false);
     }
