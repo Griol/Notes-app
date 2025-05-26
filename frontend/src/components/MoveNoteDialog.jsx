@@ -10,15 +10,18 @@ import {
   Select, 
   MenuItem,
   Typography,
-  Box
+  Box,
+  IconButton
 } from '@mui/material';
 import { getFolders, getNote, patchNote } from '../api/notesApi';
+import { Folder as FolderIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
 
 const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
   const [folders, setFolders] = useState([]);
   const [selectedFolder, setSelectedFolder] = useState(note?.folder || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [openFolders, setOpenFolders] = useState({});
 
   useEffect(() => {
     if (open) {
@@ -43,18 +46,54 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
     setSelectedFolder(e.target.value);
   };
 
+  const toggleFolderOpen = (folderId, e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setOpenFolders(prev => ({
+      ...prev,
+      [folderId]: !prev[folderId]
+    }));
+  };
+
+  const renderFolderMenuItem = (folder, level = 0) => {
+    const hasChildren = folder.children && folder.children.length > 0;
+    const isOpen = openFolders[folder.id] || false;
+
+    return (
+      <React.Fragment key={folder.id}>
+        <MenuItem 
+          value={folder.id}
+          sx={{ pl: level ? 2 + level * 2 : 2 }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <FolderIcon fontSize="small" sx={{ mr: 1 }} />
+            <Typography sx={{ flexGrow: 1 }}>{folder.name}</Typography>
+            {hasChildren && (
+              <IconButton
+                size="small"
+                onClick={(e) => toggleFolderOpen(folder.id, e)}
+                sx={{ ml: 1 }}
+              >
+                {isOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+              </IconButton>
+            )}
+          </Box>
+        </MenuItem>
+        {hasChildren && isOpen && (
+          folder.children.map(childFolder => renderFolderMenuItem(childFolder, level + 1))
+        )}
+      </React.Fragment>
+    );
+  };
+
   const handleMove = async () => {
     setLoading(true);
     try {
-      // Отправляем только необходимые поля для обновления
-      // При частичном обновлении используем PATCH
       const updatedData = {
         folder: selectedFolder === '' ? null : selectedFolder
       };
       
-      console.log('Отправляем на сервер (PATCH):', updatedData);
-      
-      // Используем patchNote вместо updateNote
       await patchNote(note.id, updatedData);
       
       setLoading(false);
@@ -62,26 +101,20 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
       onClose();
     } catch (err) {
       console.error('Error moving note:', err);
-      
-      // Детальная информация об ошибке
       if (err.response && err.response.data) {
-        console.error('Server error details:', err.response.data);
-        if (typeof err.response.data === 'object') {
-          // Форматируем ошибки из объекта
-          const errorMessages = Object.entries(err.response.data)
-            .map(([field, message]) => `${field}: ${message}`)
-            .join(', ');
-          setError(`Failed to move note: ${errorMessages}`);
-        } else {
-          setError(`Failed to move note: ${err.response.data}`);
-        }
+        const errorMessages = Object.entries(err.response.data)
+          .map(([field, message]) => `${field}: ${message}`)
+          .join(', ');
+        setError(`Failed to move note: ${errorMessages}`);
       } else {
         setError(`Failed to move note: ${err.message}`);
       }
-      
       setLoading(false);
     }
   };
+
+  // Filter root folders (those without parents)
+  const rootFolders = folders.filter(folder => !folder.parent);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -105,11 +138,7 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
               <MenuItem value="">
                 <em>None (Root)</em>
               </MenuItem>
-              {folders.map((folder) => (
-                <MenuItem key={folder.id} value={folder.id}>
-                  {folder.name}
-                </MenuItem>
-              ))}
+              {rootFolders.map(folder => renderFolderMenuItem(folder))}
             </Select>
           </FormControl>
         </Box>

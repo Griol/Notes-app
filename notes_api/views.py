@@ -5,12 +5,22 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import RestrictedError
+from django.contrib.auth import get_user_model
 from .models import Tag, Folder, Note
 from .serializers import (
     TagSerializer, FolderSerializer, NoteSerializer,
-    FolderStructureSerializer, SidebarSerializer
+    FolderStructureSerializer, SidebarSerializer, UserProfileSerializer
 )
 from .filters import NoteFilter
+
+User = get_user_model()
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        return self.request.user
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -27,13 +37,33 @@ class FolderViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = Folder.objects.filter(user=self.request.user)
+        
+        # If parent parameter is provided, filter by parent
         parent = self.request.query_params.get('parent')
-        if parent:
+        if parent is not None:
             if parent == 'null':
                 queryset = queryset.filter(parent=None)
             else:
                 queryset = queryset.filter(parent=parent)
-        return queryset
+        
+        return queryset.select_related('parent').prefetch_related('children')
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Get all children recursively
+        def get_all_children(folder):
+            children = Folder.objects.filter(parent=folder, user=request.user)
+            result = []
+            for child in children:
+                child_data = self.get_serializer(child).data
+                child_data['children'] = get_all_children(child)
+                result.append(child_data)
+            return result
+        
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        data['children'] = get_all_children(instance)
+        return Response(data)
     
     def destroy(self, request, *args, **kwargs):
         folder = self.get_object()

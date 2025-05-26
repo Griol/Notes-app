@@ -4,14 +4,15 @@ import {
   Container, Grid, Card, CardContent, CardActions, Typography, 
   Button, TextField, Box, Chip, IconButton, Paper, InputAdornment,
   Menu, MenuItem, ListItemIcon, ListItemText, Tabs, Tab, Divider,
-  Tooltip, Stack, Badge, FormControl, Select
+  Tooltip, Stack, Badge, FormControl, Select, List, ListItem,
+  ListItemButton, ListItemAvatar, Avatar
 } from '@mui/material';
 import { 
   Add, Search, Folder as FolderIcon, Edit, Delete, MoreVert,
   Sort, Article, Label, CalendarToday, Description, FilterList,
-  DriveFileMove
+  DriveFileMove, ChevronRight, ExpandLess, ExpandMore
 } from '@mui/icons-material';
-import { getNotes, deleteNote, getFolder, getTags } from '../api/notesApi';
+import { getNotes, deleteNote, getFolder, getTags, getFolders } from '../api/notesApi';
 import MoveNoteDialog from '../components/MoveNoteDialog';
 
 const NotesPage = () => {
@@ -35,6 +36,10 @@ const NotesPage = () => {
   const [sortDirection, setSortDirection] = useState('desc');
   const [viewType, setViewType] = useState('all');
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [folders, setFolders] = useState([]);
+  const [selectedFolder, setSelectedFolder] = useState(null);
+  const [folderMenuAnchor, setFolderMenuAnchor] = useState(null);
+  const [openFolders, setOpenFolders] = useState({});
 
   // Determine page title based on URL
   const pageTitle = 
@@ -50,10 +55,43 @@ const NotesPage = () => {
         const tagsResponse = await getTags();
         setAvailableTags(tagsResponse.data);
         
-        // If we're viewing a folder, load the folder details
+        // Load folders with their structure
+        const foldersResponse = await getFolders();
+        setFolders(foldersResponse.data);
+        
+        // If we're viewing a folder, find it in the folders structure
         if (folderId) {
-          const folderResponse = await getFolder(folderId);
-          setFolder(folderResponse.data);
+          const findFolder = (folders, id) => {
+            for (const folder of folders) {
+              if (folder.id.toString() === id.toString()) {
+                return folder;
+              }
+              if (folder.children) {
+                const found = findFolder(folder.children, id);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+          
+          const foundFolder = findFolder(foldersResponse.data, folderId);
+          if (foundFolder) {
+            setSelectedFolder(foundFolder);
+            // Automatically open parent folders
+            const openParentFolders = (folder) => {
+              if (folder.parent) {
+                setOpenFolders(prev => ({
+                  ...prev,
+                  [folder.parent]: true
+                }));
+                const parentFolder = findFolder(foldersResponse.data, folder.parent);
+                if (parentFolder) {
+                  openParentFolders(parentFolder);
+                }
+              }
+            };
+            openParentFolders(foundFolder);
+          }
         }
         
         // Fetch notes with filters
@@ -210,94 +248,203 @@ const NotesPage = () => {
     fetchNotes();
   };
 
-  const renderNoteCard = (note) => (
-    <Card
-      key={note.id}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        borderRadius: 2,
-        position: 'relative',
-        cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: 3,
-        }
-      }}
-      onClick={() => handleEditNote(note.id)}
-    >
-      <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Description fontSize="small" color="secondary" sx={{ mr: 1 }} />
-            <Typography variant="subtitle1" component="h2" fontWeight={500} noWrap>
-              {note.title || 'Untitled Note'}
-            </Typography>
-          </Box>
-          <IconButton
-            size="small"
-            onClick={(e) => handleNoteMenuOpen(e, note)}
-            sx={{ mt: -0.5, mr: -0.5 }}
+  const handleFolderClick = (folder) => {
+    navigate(`/folder/${folder.id}`);
+    setSelectedFolder(folder);
+    if (mobileOpen) {
+      setMobileOpen(false);
+    }
+  };
+
+  const handleFolderMenuOpen = (event, folder) => {
+    event.stopPropagation();
+    setSelectedFolder(folder);
+    setFolderMenuAnchor(event.currentTarget);
+  };
+
+  const handleFolderMenuClose = () => {
+    setFolderMenuAnchor(null);
+  };
+
+  const handleAddFolder = () => {
+    navigate('/folder/new');
+  };
+
+  const handleEditFolder = () => {
+    if (selectedFolder) {
+      navigate(`/folder/edit/${selectedFolder.id}`);
+    }
+    handleFolderMenuClose();
+  };
+
+  const handleDeleteFolder = async () => {
+    if (selectedFolder) {
+      try {
+        await deleteFolder(selectedFolder.id);
+        // Refresh folders and notes
+        const foldersResponse = await getFolders();
+        setFolders(foldersResponse.data);
+        fetchNotes();
+      } catch (err) {
+        setError('Failed to delete folder');
+      }
+    }
+    handleFolderMenuClose();
+  };
+
+  const toggleFolderOpen = (folderId, e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setOpenFolders(prev => ({
+      ...prev,
+      [folderId]: !prev[folderId]
+    }));
+  };
+
+  const renderFolderList = () => {
+    const renderFolder = (folder, level = 0) => {
+      const hasChildren = folder.children && folder.children.length > 0;
+      const isOpen = openFolders[folder.id] || false;
+      const isSelected = selectedFolder?.id === folder.id;
+
+      return (
+        <React.Fragment key={folder.id}>
+          <ListItemButton
+            onClick={() => handleFolderClick(folder)}
+            selected={isSelected}
+            sx={{
+              pl: level ? 2 + level * 2 : 2,
+              borderRadius: 1,
+              mb: 0.5,
+              '&.Mui-selected': {
+                backgroundColor: 'rgba(99, 102, 241, 0.08)',
+              }
+            }}
           >
-            <MoreVert fontSize="small" />
-          </IconButton>
-        </Box>
-        
-        {note.folder && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-            <FolderIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: '0.9rem' }} />
-            <Typography variant="body2" color="text.secondary" fontSize="0.8rem">
-              {note.folder.name}
-            </Typography>
-          </Box>
-        )}
-        
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
-          sx={{ 
-            mb: 2,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            fontSize: '0.85rem',
-            lineHeight: 1.5
-          }}
-        >
-          {note.content || 'No content'}
-        </Typography>
-      </CardContent>
-      
-      <Box sx={{ px: 2, mb: 1.5 }}>
-        {note.tags && note.tags.length > 0 && (
-          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-            {note.tags.map(tag => (
-              <Chip
-                key={tag.id}
-                label={tag.name}
+            <ListItemIcon>
+              <FolderIcon color={isSelected ? 'primary' : 'inherit'} />
+            </ListItemIcon>
+            <ListItemText 
+              primary={folder.name}
+              primaryTypographyProps={{
+                color: isSelected ? 'primary' : 'inherit',
+                fontWeight: isSelected ? 500 : 400
+              }}
+            />
+            {hasChildren && (
+              <IconButton
                 size="small"
-                icon={<Label fontSize="small" />}
-                sx={{ 
-                  height: 22, 
-                  fontSize: '0.75rem',
-                  '& .MuiChip-icon': { fontSize: '0.75rem' } 
-                }}
-              />
-            ))}
-          </Stack>
-        )}
+                onClick={(e) => toggleFolderOpen(folder.id, e)}
+                sx={{ mr: 1 }}
+              >
+                {isOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+              </IconButton>
+            )}
+            <IconButton
+              size="small"
+              onClick={(e) => handleFolderMenuOpen(e, folder)}
+              sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
+            >
+              <MoreVert fontSize="small" />
+            </IconButton>
+          </ListItemButton>
+          
+          {hasChildren && isOpen && (
+            <Box sx={{ pl: 2 }}>
+              {folder.children.map(childFolder => renderFolder(childFolder, level + 1))}
+            </Box>
+          )}
+        </React.Fragment>
+      );
+    };
+
+    // Filter root folders (those without parents)
+    const rootFolders = folders.filter(folder => !folder.parent);
+
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6">Folders</Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Add />}
+            onClick={handleAddFolder}
+            sx={{ textTransform: 'none' }}
+          >
+            New Folder
+          </Button>
+        </Box>
+        <List>
+          {rootFolders.map(folder => renderFolder(folder))}
+        </List>
       </Box>
-      
-      <CardActions sx={{ justifyContent: 'space-between', p: 2, pt: 0 }}>
-        <Typography variant="caption" color="text.secondary" fontSize="0.75rem">
-          {new Date(note.updated_at).toLocaleDateString()}
-        </Typography>
-      </CardActions>
-    </Card>
+    );
+  };
+
+  const renderNoteList = () => (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6">Notes</Typography>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<Add />}
+          onClick={handleCreateNote}
+          sx={{ textTransform: 'none' }}
+        >
+          New Note
+        </Button>
+      </Box>
+      <List>
+        {notes.map((note) => (
+          <ListItemButton
+            key={note.id}
+            onClick={() => handleEditNote(note.id)}
+            sx={{
+              borderRadius: 1,
+              mb: 0.5,
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              }
+            }}
+          >
+            <ListItemIcon>
+              <Description color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary={note.title || 'Untitled Note'}
+              secondary={
+                <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary" component="span">
+                    {new Date(note.updated_at).toLocaleDateString()}
+                  </Typography>
+                  {note.folder && (
+                    <>
+                      <Typography variant="body2" color="text.secondary" component="span">•</Typography>
+                      <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
+                        <FolderIcon fontSize="small" sx={{ mr: 0.5, fontSize: '0.9rem' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {note.folder.name}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+                </Box>
+              }
+            />
+            <IconButton
+              size="small"
+              onClick={(e) => handleNoteMenuOpen(e, note)}
+              sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
+            >
+              <MoreVert fontSize="small" />
+            </IconButton>
+          </ListItemButton>
+        ))}
+      </List>
+    </Box>
   );
 
   return (
@@ -442,21 +589,11 @@ const NotesPage = () => {
       {loading ? (
         <Typography>Loading notes...</Typography>
       ) : (
-        <Grid container spacing={2}>
-          {notes.length > 0 ? (
-            notes.map(note => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={note.id}>
-                {renderNoteCard(note)}
-              </Grid>
-            ))
-          ) : (
-            <Grid item xs={12}>
-              <Typography align="center" color="text.secondary" sx={{ py: 4 }}>
-                No notes found. Create a new note to get started.
-              </Typography>
-            </Grid>
-          )}
-        </Grid>
+        <>
+          {renderFolderList()}
+          <Divider sx={{ my: 3 }} />
+          {renderNoteList()}
+        </>
       )}
       
       {/* Note Menu */}
@@ -517,6 +654,26 @@ const NotesPage = () => {
               {sortDirection === 'asc' ? '(Oldest)' : '(Newest)'}
             </Typography>
           )}
+        </MenuItem>
+      </Menu>
+      
+      {/* Folder Menu */}
+      <Menu
+        anchorEl={folderMenuAnchor}
+        open={Boolean(folderMenuAnchor)}
+        onClose={handleFolderMenuClose}
+      >
+        <MenuItem onClick={handleEditFolder}>
+          <ListItemIcon>
+            <Edit fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Edit" />
+        </MenuItem>
+        <MenuItem onClick={handleDeleteFolder}>
+          <ListItemIcon>
+            <Delete fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Delete" />
         </MenuItem>
       </Menu>
       

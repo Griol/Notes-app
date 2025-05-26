@@ -82,7 +82,7 @@ export const loginUser = (credentials) => {
 };
 
 export const getUserProfile = () => {
-  return api.get('/auth/profile/');
+  return api.get('/users/profile/');
 };
 
 export const logoutUser = () => {
@@ -165,4 +165,9 @@ export const getFolderStructure = () => {
 
 export const getSidebar = () => {
   return api.get('/sidebar/');
+};
+
+// User Profile API calls
+export const updateUserProfile = (profileData) => {
+  return api.put('/users/profile/', profileData);
 }; 

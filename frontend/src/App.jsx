@@ -11,6 +11,7 @@ import NotesPage from './pages/NotesPage';
 import NoteEditor from './components/NoteEditor';
 import TagsPage from './pages/TagsPage';
 import FolderManager from './components/FolderManager';
+import ProfilePage from './pages/ProfilePage';
 
 // Auth guard component
 const PrivateRoute = ({ children }) => {
@@ -161,7 +162,7 @@ function App() {
           <Route path="/profile" element={
             <PrivateRoute>
               <AppLayout>
-                <div>Profile Page (coming soon)</div>
+                <ProfilePage />
               </AppLayout>
             </PrivateRoute>
           } />

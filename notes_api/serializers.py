@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Tag, Folder, Note
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -16,10 +18,18 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class FolderSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+    parent = serializers.PrimaryKeyRelatedField(queryset=Folder.objects.all(), required=False, allow_null=True)
+    
     class Meta:
         model = Folder
-        fields = ['id', 'name', 'parent', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'parent', 'children', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_children(self, obj):
+        # Get direct children of this folder
+        children = Folder.objects.filter(parent=obj, user=obj.user)
+        return FolderSerializer(children, many=True, context=self.context).data
 
     def create(self, validated_data):
         # Associate with current user
@@ -127,4 +137,11 @@ class SidebarSerializer(serializers.ModelSerializer):
     def get_recent_notes(self, obj):
         # Get 5 most recent notes
         notes = Note.objects.filter(user=obj).order_by('-updated_at')[:5]
-        return NoteSerializer(notes, many=True).data 
+        return NoteSerializer(notes, many=True).data
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        read_only_fields = ['id'] 

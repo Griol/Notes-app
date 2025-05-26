@@ -18,12 +18,14 @@ import {
 import { getFolderStructure, getSidebar, deleteFolder, logoutUser } from '../api/notesApi';
 
 const drawerWidth = 260;
+const collapsedDrawerWidth = 65;
 
 const AppLayout = ({ children }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [folders, setFolders] = useState([]);
   const [recentNotes, setRecentNotes] = useState([]);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
@@ -58,6 +60,10 @@ const AppLayout = ({ children }) => {
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleCollapseToggle = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
   const handleProfileMenuOpen = (event) => {
@@ -160,6 +166,11 @@ const AppLayout = ({ children }) => {
     navigate('/note/new');
   };
 
+  const handleProfileClick = () => {
+    handleProfileMenuClose();
+    navigate('/profile');
+  };
+
   const renderFolderTree = (folderList, level = 0) => {
     return folderList.map(folder => {
       const hasChildren = folder.children && folder.children.length > 0;
@@ -226,7 +237,12 @@ const AppLayout = ({ children }) => {
         height: '100%', 
         display: 'flex', 
         flexDirection: 'column',
-        overflowX: 'hidden'
+        overflowX: 'hidden',
+        width: isCollapsed ? collapsedDrawerWidth : drawerWidth,
+        transition: theme.transitions.create('width', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
       }}
     >
       <Toolbar 
@@ -237,185 +253,82 @@ const AppLayout = ({ children }) => {
           justifyContent: 'space-between'
         }}
       >
-        <Typography variant="h6" noWrap component="div">
-          Notes App
-        </Typography>
-        <IconButton onClick={handleDrawerToggle} sx={{ display: { sm: 'none' } }}>
-          <ChevronLeft />
+        {!isCollapsed && (
+          <Typography variant="h6" noWrap component="div">
+            Notes App
+          </Typography>
+        )}
+        <IconButton onClick={handleCollapseToggle}>
+          <ChevronLeft sx={{ transform: isCollapsed ? 'rotate(180deg)' : 'none' }} />
         </IconButton>
       </Toolbar>
       
-      <Box 
-        component="form" 
-        onSubmit={handleSearch}
-        sx={{ px: 2, mb: 2 }}
-      >
-        <TextField
-          fullWidth
-          placeholder="Search..."
-          size="small"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search fontSize="small" />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
-              fontSize: '0.9rem',
-            }
-          }}
-        />
-      </Box>
-      
-      <List component="nav" dense sx={{ px: 1 }}>
-        <ListItemButton 
-          component={RouterLink} 
-          to="/notes"
-          sx={{
-            borderLeft: location.pathname === '/notes' ? 
-              `3px solid ${theme.palette.primary.main}` : 'none',
-            bgcolor: location.pathname === '/notes' ? 
-              'rgba(99, 102, 241, 0.08)' : 'transparent',
-          }}
+      {!isCollapsed && (
+        <Box 
+          component="form" 
+          onSubmit={handleSearch}
+          sx={{ px: 2, mb: 2 }}
         >
-          <ListItemIcon>
-            <FormatListBulleted fontSize="small" />
-          </ListItemIcon>
-          <ListItemText primary="All Notes" />
-        </ListItemButton>
-        
-        <ListItemButton 
-          component={RouterLink} 
-          to="/tags"
-          sx={{
-            borderLeft: location.pathname === '/tags' ? 
-              `3px solid ${theme.palette.primary.main}` : 'none',
-            bgcolor: location.pathname === '/tags' ? 
-              'rgba(99, 102, 241, 0.08)' : 'transparent',
-          }}
-        >
-          <ListItemIcon>
-            <Label fontSize="small" />
-          </ListItemIcon>
-          <ListItemText primary="Tags" />
-        </ListItemButton>
-        
-        <ListItemButton onClick={() => navigate('/notes')}>
-          <ListItemIcon>
-            <Today fontSize="small" />
-          </ListItemIcon>
-          <ListItemText primary="Today's Note" />
-        </ListItemButton>
-        
-        <ListItemButton sx={{ mt: 1 }}>
-          <ListItemIcon>
-            <Extension fontSize="small" />
-          </ListItemIcon>
-          <ListItemText primary="Flashcards" />
-          <Badge badgeContent="1" color="primary" sx={{ mr: 1 }} />
-        </ListItemButton>
-      </List>
-      
-      <Divider sx={{ my: 1 }} />
-      
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          px: 2,
-          py: 1
-        }}
-      >
-        <Typography variant="subtitle2" color="text.secondary">
-          Folders
-        </Typography>
-        <IconButton 
-          size="small"
-          onClick={handleAddFolder}
-          title="Create new folder"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      </Box>
+          <TextField
+            fullWidth
+            placeholder="Search..."
+            size="small"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+              }
+            }}
+          />
+        </Box>
+      )}
       
       <List dense sx={{ px: 1, flex: '1 1 auto', overflowY: 'auto' }}>
-        {folders.length > 0 ? (
-          renderFolderTree(folders)
-        ) : (
-          <ListItem>
-            <ListItemText 
-              primary="No folders" 
-              primaryTypographyProps={{ 
-                color: 'text.secondary',
-                fontSize: '0.9rem' 
-              }} 
-            />
-          </ListItem>
-        )}
+        <ListItemButton
+          component={RouterLink}
+          to="/"
+          selected={location.pathname === '/'}
+          sx={{ borderRadius: 1, mb: 0.5 }}
+        >
+          <ListItemIcon>
+            <Description />
+          </ListItemIcon>
+          {!isCollapsed && <ListItemText primary="All Notes" />}
+        </ListItemButton>
+
+        <ListItemButton
+          component={RouterLink}
+          to="/flashcards"
+          selected={location.pathname === '/flashcards'}
+          sx={{ borderRadius: 1, mb: 0.5 }}
+        >
+          <ListItemIcon>
+            <School />
+          </ListItemIcon>
+          {!isCollapsed && <ListItemText primary="Flashcards" />}
+        </ListItemButton>
+
+        <ListItemButton
+          component={RouterLink}
+          to="/profile"
+          selected={location.pathname === '/profile'}
+          sx={{ borderRadius: 1, mb: 0.5 }}
+        >
+          <ListItemIcon>
+            <AccountCircle />
+          </ListItemIcon>
+          {!isCollapsed && <ListItemText primary="Profile" />}
+        </ListItemButton>
       </List>
-      
-      <Divider sx={{ my: 1 }} />
-      
-      <Box sx={{ p: 1 }}>
-        <Typography 
-          variant="subtitle2" 
-          color="text.secondary"
-          sx={{ px: 1, mb: 1 }}
-        >
-          Recent Notes
-        </Typography>
-        <List dense>
-          {recentNotes && recentNotes.length > 0 ? (
-            recentNotes.map(note => (
-              <ListItemButton 
-                key={note.id}
-                component={RouterLink}
-                to={`/note/${note.id}`}
-                sx={{ borderRadius: 1 }}
-              >
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  <Description fontSize="small" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={note.title} 
-                  primaryTypographyProps={{ 
-                    noWrap: true,
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </ListItemButton>
-            ))
-          ) : (
-            <ListItem>
-              <ListItemText 
-                primary="No recent notes" 
-                primaryTypographyProps={{ 
-                  color: 'text.secondary',
-                  fontSize: '0.9rem' 
-                }}
-              />
-            </ListItem>
-          )}
-        </List>
-      </Box>
-      
-      <Box sx={{ p: 2, mt: 'auto' }}>
-        <Button
-          variant="outlined" 
-          color="primary"
-          startIcon={<School />}
-          fullWidth
-          size="small"
-        >
-          AI Learning Tools
-        </Button>
-      </Box>
     </Box>
   );
 
@@ -425,8 +338,12 @@ const AppLayout = ({ children }) => {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
+          width: { sm: `calc(100% - ${isCollapsed ? collapsedDrawerWidth : drawerWidth}px)` },
+          ml: { sm: `${isCollapsed ? collapsedDrawerWidth : drawerWidth}px` },
+          transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -485,18 +402,21 @@ const AppLayout = ({ children }) => {
               anchorEl={profileMenuAnchor}
               open={Boolean(profileMenuAnchor)}
               onClose={handleProfileMenuClose}
+              onClick={handleProfileMenuClose}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-              <MenuItem component={RouterLink} to="/profile">
+              <MenuItem onClick={handleProfileClick}>
                 <ListItemIcon>
                   <AccountCircle fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary="Profile" />
+                <ListItemText>Profile</ListItemText>
               </MenuItem>
               <MenuItem onClick={handleLogout}>
                 <ListItemIcon>
-                  <ExitToApp fontSize="small" color="error" />
+                  <ExitToApp fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary="Logout" />
+                <ListItemText>Logout</ListItemText>
               </MenuItem>
             </Menu>
           </Box>
@@ -505,34 +425,43 @@ const AppLayout = ({ children }) => {
       
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ 
+          width: { sm: isCollapsed ? collapsedDrawerWidth : drawerWidth }, 
+          flexShrink: { sm: 0 },
+          transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+        }}
       >
-        {/* Mobile drawer */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
           sx={{
             display: { xs: 'block', sm: 'none' },
             '& .MuiDrawer-paper': { 
               boxSizing: 'border-box', 
-              width: drawerWidth,
+              width: drawerWidth 
             },
           }}
         >
           {drawer}
         </Drawer>
-        
-        {/* Desktop permanent drawer */}
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
             '& .MuiDrawer-paper': { 
-              boxSizing: 'border-box', 
-              width: drawerWidth,
-              borderRight: '1px solid rgba(255, 255, 255, 0.05)',
+              boxSizing: 'border-box',
+              width: isCollapsed ? collapsedDrawerWidth : drawerWidth,
+              transition: theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
             },
           }}
           open
@@ -546,7 +475,11 @@ const AppLayout = ({ children }) => {
         sx={{ 
           flexGrow: 1, 
           p: 2, 
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { sm: `calc(100% - ${isCollapsed ? collapsedDrawerWidth : drawerWidth}px)` },
+          transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
           minHeight: '100vh',
         }}
       >
