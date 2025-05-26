@@ -1,0 +1,40 @@
+/* frontend/src/components/tiptap.css */
+
+.ProseMirror {
+  outline: none;
+  background: transparent;
+  color: #fff;
+  min-height: 200px;
+  font-size: 18px;
+  font-weight: 400;
+  padding: 0;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+}
+
+td, th {
+  border: 1px solid #444;
+  padding: 4px 8px;
+  min-width: 40px;
+}
+
+th {
+  background: #232336;
+  font-weight: bold;
+}
+
+.selectedCell {
+  background: #6366f1 !important;
+}
+
+.ProseMirror-gapcursor {
+  display: none;
+}
