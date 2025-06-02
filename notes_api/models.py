@@ -43,3 +43,48 @@ class Note(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Flashcard(models.Model):
+    question = models.TextField()
+    answer = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='flashcards')
+    folder = models.ForeignKey(Folder, on_delete=models.SET_NULL, null=True, blank=True, related_name='flashcards')
+    tags = models.ManyToManyField(Tag, blank=True, related_name='flashcards')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return self.question[:50]
+
+
+class FlashcardStat(models.Model):
+    RESULT_CHOICES = [
+        ('know', 'Знаю'),
+        ('repeat', 'Нужно повторить'),
+        ('dont_know', 'Не знаю'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='flashcard_stats')
+    flashcard = models.ForeignKey(Flashcard, on_delete=models.CASCADE, related_name='stats')
+    date = models.DateField(auto_now_add=True)
+    result = models.CharField(max_length=10, choices=RESULT_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class DailyFlashcardStat(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_flashcard_stats')
+    date = models.DateField()
+    solved_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ['user', 'date']
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date}: {self.solved_count}"

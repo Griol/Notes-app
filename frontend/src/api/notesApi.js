@@ -170,4 +170,39 @@ export const getSidebar = () => {
 // User Profile API calls
 export const updateUserProfile = (profileData) => {
   return api.put('/users/profile/', profileData);
+};
+
+// Flashcard API calls
+export const getFlashcards = (params = {}) => {
+  return api.get('/flashcards/', { params });
+};
+
+export const getFlashcard = (id) => {
+  return api.get(`/flashcards/${id}/`);
+};
+
+export const createFlashcard = (flashcardData) => {
+  return api.post('/flashcards/', flashcardData);
+};
+
+export const updateFlashcard = (id, flashcardData) => {
+  return api.put(`/flashcards/${id}/`, flashcardData);
+};
+
+export const deleteFlashcard = (id) => {
+  return api.delete(`/flashcards/${id}/`);
+};
+
+// FlashcardStat API calls (оценка)
+export const createFlashcardStat = (statData) => {
+  return api.post('/flashcard-stats/', statData);
+};
+
+export const getFlashcardStats = (params = {}) => {
+  return api.get('/flashcard-stats/', { params });
+};
+
+// DailyFlashcardStat API calls (ежедневная статистика)
+export const getDailyFlashcardStats = (params = {}) => {
+  return api.get('/daily-flashcard-stats/', { params });
 }; 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tag, Folder, Note
+from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -144,4 +144,53 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
-        read_only_fields = ['id'] 
+        read_only_fields = ['id']
+
+
+class FlashcardSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(many=True, required=False, read_only=True)
+    tag_ids = serializers.PrimaryKeyRelatedField(
+        many=True, write_only=True, required=False, queryset=Tag.objects.all(), source='tags'
+    )
+    folder = serializers.PrimaryKeyRelatedField(queryset=Folder.objects.all(), required=False, allow_null=True)
+
+    class Meta:
+        model = Flashcard
+        fields = [
+            'id', 'question', 'answer', 'folder', 'tags', 'tag_ids', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        tags = validated_data.pop('tags', [])
+        user = self.context['request'].user
+        validated_data['user'] = user
+        flashcard = Flashcard.objects.create(**validated_data)
+        flashcard.tags.set(tags)
+        return flashcard
+
+    def update(self, instance, validated_data):
+        tags = validated_data.pop('tags', None)
+        flashcard = super().update(instance, validated_data)
+        if tags is not None:
+            flashcard.tags.set(tags)
+        return flashcard
+
+
+class FlashcardStatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FlashcardStat
+        fields = ['id', 'flashcard', 'date', 'result', 'created_at']
+        read_only_fields = ['id', 'date', 'created_at']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user'] = user
+        return super().create(validated_data)
+
+
+class DailyFlashcardStatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyFlashcardStat
+        fields = ['id', 'date', 'solved_count']
+        read_only_fields = ['id', 'date', 'solved_count'] 

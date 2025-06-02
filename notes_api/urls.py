@@ -2,13 +2,17 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     TagViewSet, FolderViewSet, NoteViewSet,
-    FolderStructureView, SidebarView, UserProfileView
+    FolderStructureView, SidebarView, UserProfileView,
+    FlashcardViewSet, FlashcardStatViewSet, DailyFlashcardStatViewSet
 )
 
 router = DefaultRouter()
 router.register(r'tags', TagViewSet, basename='tag')
 router.register(r'folders', FolderViewSet, basename='folder')
 router.register(r'notes', NoteViewSet, basename='note')
+router.register(r'flashcards', FlashcardViewSet, basename='flashcard')
+router.register(r'flashcard-stats', FlashcardStatViewSet, basename='flashcardstat')
+router.register(r'daily-flashcard-stats', DailyFlashcardStatViewSet, basename='dailyflashcardstat')
 
 urlpatterns = [
     path('', include(router.urls)),

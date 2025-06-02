@@ -6,10 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import RestrictedError
 from django.contrib.auth import get_user_model
-from .models import Tag, Folder, Note
+from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat
 from .serializers import (
     TagSerializer, FolderSerializer, NoteSerializer,
-    FolderStructureSerializer, SidebarSerializer, UserProfileSerializer
+    FolderStructureSerializer, SidebarSerializer, UserProfileSerializer,
+    FlashcardSerializer, FlashcardStatSerializer, DailyFlashcardStatSerializer
 )
 from .filters import NoteFilter
 
@@ -123,3 +124,37 @@ class SidebarView(generics.GenericAPIView):
     def get(self, request):
         serializer = SidebarSerializer(request.user, context={'request': request})
         return Response(serializer.data)
+
+
+class FlashcardViewSet(viewsets.ModelViewSet):
+    serializer_class = FlashcardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Flashcard.objects.filter(user=self.request.user).prefetch_related('tags').select_related('folder')
+
+
+class FlashcardStatViewSet(viewsets.ModelViewSet):
+    serializer_class = FlashcardStatSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return FlashcardStat.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        instance = serializer.save(user=self.request.user)
+        # Обновляем/создаём DailyFlashcardStat
+        daily_stat, created = DailyFlashcardStat.objects.get_or_create(
+            user=self.request.user,
+            date=instance.date
+        )
+        daily_stat.solved_count = FlashcardStat.objects.filter(user=self.request.user, date=instance.date).count()
+        daily_stat.save()
+
+
+class DailyFlashcardStatViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = DailyFlashcardStatSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return DailyFlashcardStat.objects.filter(user=self.request.user)

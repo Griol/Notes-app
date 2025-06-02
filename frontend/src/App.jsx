@@ -12,6 +12,7 @@ import NoteEditor from './components/NoteEditor';
 import TagsPage from './pages/TagsPage';
 import FolderManager from './components/FolderManager';
 import ProfilePage from './pages/ProfilePage';
+import FlashcardsPage from './pages/FlashcardsPage';
 
 // Auth guard component
 const PrivateRoute = ({ children }) => {
@@ -163,6 +164,14 @@ function App() {
             <PrivateRoute>
               <AppLayout>
                 <ProfilePage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+          
+          <Route path="/flashcards" element={
+            <PrivateRoute>
+              <AppLayout>
+                <FlashcardsPage />
               </AppLayout>
             </PrivateRoute>
           } />
