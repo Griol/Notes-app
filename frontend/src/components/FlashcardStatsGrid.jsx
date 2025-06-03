@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getDailyFlashcardStats } from '../api/notesApi';
+import { Box, Tooltip } from '@mui/material';
 
 const tileStyle = (count) => ({
   width: 18,
@@ -10,6 +11,7 @@ const tileStyle = (count) => ({
   borderRadius: 3,
   position: 'relative',
   cursor: count > 0 ? 'pointer' : 'default',
+  transition: 'background 0.2s',
 });
 
 const FlashcardStatsGrid = () => {
@@ -20,15 +22,17 @@ const FlashcardStatsGrid = () => {
   }, []);
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', maxWidth: 400 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', maxWidth: 400 }}>
       {stats.map(day => (
-        <div
+        <Tooltip
           key={day.date}
-          style={tileStyle(day.solved_count)}
           title={`${day.solved_count} решений ${new Date(day.date).toLocaleDateString('ru-RU')}`}
-        />
+          arrow
+        >
+          <Box sx={tileStyle(day.solved_count)} />
+        </Tooltip>
       ))}
-    </div>
+    </Box>
   );
 };
 

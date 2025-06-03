@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { createFlashcardStat } from '../api/notesApi';
+import {
+  Card, CardContent, CardActions, Typography, Button, Stack, Box
+} from '@mui/material';
 
 const ratingOptions = [
   { value: 'know', label: 'Знаю' },
@@ -16,30 +19,42 @@ const FlashcardStudy = ({ card, onEnd }) => {
   const handleRate = async (result) => {
     await createFlashcardStat({ flashcard: card.id, result });
     setRated(true);
-    setTimeout(onEnd, 500); // Плавный переход к следующей/выход
+    setTimeout(onEnd, 500);
   };
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: 24, borderRadius: 8, maxWidth: 600, margin: '0 auto' }}>
-      <div style={{ fontWeight: 'bold', fontSize: 20 }}>{card.question}</div>
-      <div style={{ margin: '20px 0' }}>
-        {showAnswer ? (
-          <span style={{ color: '#2a7', fontWeight: 'bold' }}>{card.answer}</span>
-        ) : (
-          <button onClick={handleShowAnswer}>Показать ответ</button>
-        )}
-      </div>
-      <div style={{ display: 'flex', gap: 12 }}>
-        {ratingOptions.map(opt => (
-          <button key={opt.value} onClick={() => handleRate(opt.value)} disabled={rated}>
-            {opt.label}
-          </button>
-        ))}
-      </div>
-      <div style={{ marginTop: 20 }}>
-        <button onClick={onEnd}>Закрыть</button>
-      </div>
-    </div>
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 350 }}>
+      <Card variant="outlined" sx={{ maxWidth: 500, width: '100%' }}>
+        <CardContent>
+          <Typography variant="h6" fontWeight={600} gutterBottom>
+            {card.question}
+          </Typography>
+          <Box sx={{ my: 3, minHeight: 40 }}>
+            {showAnswer ? (
+              <Typography color="success.main" fontWeight={600}>{card.answer}</Typography>
+            ) : (
+              <Button variant="outlined" onClick={handleShowAnswer}>Показать ответ</Button>
+            )}
+          </Box>
+        </CardContent>
+        <CardActions sx={{ justifyContent: 'center', gap: 2 }}>
+          {ratingOptions.map(opt => (
+            <Button
+              key={opt.value}
+              onClick={() => handleRate(opt.value)}
+              disabled={rated}
+              variant={opt.value === 'know' ? 'contained' : 'outlined'}
+              color={opt.value === 'know' ? 'success' : opt.value === 'repeat' ? 'warning' : 'error'}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </CardActions>
+        <CardActions sx={{ justifyContent: 'flex-end' }}>
+          <Button onClick={onEnd}>Закрыть</Button>
+        </CardActions>
+      </Card>
+    </Box>
   );
 };
 

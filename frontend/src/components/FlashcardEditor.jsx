@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getTags, getFolders } from '../api/notesApi';
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, Select, MenuItem, InputLabel, FormControl, OutlinedInput, Box, Chip, Stack
+} from '@mui/material';
 
 const FlashcardEditor = ({ onSave, onCancel }) => {
   const [question, setQuestion] = useState('');
@@ -29,35 +33,70 @@ const FlashcardEditor = ({ onSave, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ margin: '20px 0' }}>
-      <div>
-        <label>Вопрос:</label>
-        <input value={question} onChange={e => setQuestion(e.target.value)} required />
-      </div>
-      <div>
-        <label>Ответ:</label>
-        <input value={answer} onChange={e => setAnswer(e.target.value)} required />
-      </div>
-      <div>
-        <label>Теги:</label>
-        <select multiple value={selectedTags} onChange={e => setSelectedTags(Array.from(e.target.selectedOptions, o => o.value))}>
-          {tags.map(tag => (
-            <option key={tag.id} value={tag.id}>{tag.name}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label>Папка:</label>
-        <select value={folder} onChange={e => setFolder(e.target.value)}>
-          <option value=''>Без папки</option>
-          {folders.map(f => (
-            <option key={f.id} value={f.id}>{f.name}</option>
-          ))}
-        </select>
-      </div>
-      <button type="submit">Сохранить</button>
-      <button type="button" onClick={onCancel}>Отмена</button>
-    </form>
+    <Dialog open onClose={onCancel} maxWidth="sm" fullWidth>
+      <DialogTitle>Создать флеш-карту</DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <Stack spacing={2}>
+            <TextField
+              label="Вопрос"
+              value={question}
+              onChange={e => setQuestion(e.target.value)}
+              required
+              fullWidth
+              autoFocus
+            />
+            <TextField
+              label="Ответ"
+              value={answer}
+              onChange={e => setAnswer(e.target.value)}
+              required
+              fullWidth
+            />
+            <FormControl fullWidth>
+              <InputLabel id="tags-label">Теги</InputLabel>
+              <Select
+                labelId="tags-label"
+                multiple
+                value={selectedTags}
+                onChange={e => setSelectedTags(e.target.value)}
+                input={<OutlinedInput label="Теги" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((tagId) => {
+                      const tag = tags.find(t => t.id === tagId);
+                      return tag ? <Chip key={tag.id} label={tag.name} size="small" /> : null;
+                    })}
+                  </Box>
+                )}
+              >
+                {tags.map(tag => (
+                  <MenuItem key={tag.id} value={tag.id}>{tag.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="folder-label">Папка</InputLabel>
+              <Select
+                labelId="folder-label"
+                value={folder}
+                onChange={e => setFolder(e.target.value)}
+                input={<OutlinedInput label="Папка" />}
+              >
+                <MenuItem value=''>Без папки</MenuItem>
+                {folders.map(f => (
+                  <MenuItem key={f.id} value={f.id}>{f.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onCancel}>Отмена</Button>
+          <Button type="submit" variant="contained">Сохранить</Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 };
 
