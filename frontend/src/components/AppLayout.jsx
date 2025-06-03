@@ -317,6 +317,19 @@ const AppLayout = ({ children }) => {
           {!isCollapsed && <ListItemText primary="Flashcards" />}
         </ListItemButton>
 
+
+        <ListItemButton
+          component={RouterLink}
+          to="/tags"
+          selected={location.pathname === '/tags'}
+          sx={{ borderRadius: 1, mb: 0.5 }}
+        >
+          <ListItemIcon>
+            <Label />
+          </ListItemIcon>
+          {!isCollapsed && <ListItemText primary="Теги" />}
+        </ListItemButton>
+
         <ListItemButton
           component={RouterLink}
           to="/profile"

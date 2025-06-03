@@ -13,6 +13,7 @@ import TagsPage from './pages/TagsPage';
 import FolderManager from './components/FolderManager';
 import ProfilePage from './pages/ProfilePage';
 import FlashcardsPage from './pages/FlashcardsPage';
+import FlashcardsStatsPage from './pages/FlashcardsStatsPage';
 
 // Auth guard component
 const PrivateRoute = ({ children }) => {
@@ -176,6 +177,7 @@ function App() {
             </PrivateRoute>
           } />
           
+
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

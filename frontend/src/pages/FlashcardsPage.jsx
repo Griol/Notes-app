@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getFlashcards, createFlashcard, deleteFlashcard } from '../api/notesApi';
 import FlashcardEditor from '../components/FlashcardEditor';
 import FlashcardStudy from '../components/FlashcardStudy';
-import FlashcardStatsGrid from '../components/FlashcardStatsGrid';
+
 import {
   Container, Card, CardContent, CardActions, Typography, Button, Grid, Box, Stack, Chip
 } from '@mui/material';
@@ -82,10 +82,7 @@ const FlashcardsPage = () => {
       {studyMode && selectedCard && (
         <FlashcardStudy card={selectedCard} onEnd={handleStudyEnd} />
       )}
-      <Box sx={{ mt: 6 }}>
-        <Typography variant="h6" gutterBottom>Статистика</Typography>
-        <FlashcardStatsGrid />
-      </Box>
+
     </Container>
   );
 };
