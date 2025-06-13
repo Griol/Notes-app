@@ -27,6 +27,7 @@ SECRET_KEY = 'django-insecure-8mp%^5aw9twci^e#sb_=bsu2*wvnd5+z+c(4@eq&cc+6y(-i7i
 DEBUG = True
 
 ALLOWED_HOSTS = ["notes-app-6yx2.onrender.com", "127.0.0.1", "localhost"]
+ALLOWED_ORIGINS = ["https://notes-app-front-2agr.onrender.com"]
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
