@@ -177,7 +177,14 @@ function App() {
             </PrivateRoute>
           } />
           
-
+          <Route path="/flashcards-stats" element={
+            <PrivateRoute>
+              <AppLayout>
+                <FlashcardsStatsPage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+          
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

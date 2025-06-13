@@ -8,7 +8,7 @@ import {
   ListItemButton, ListItemAvatar, Avatar
 } from '@mui/material';
 import { 
-  Add, Search, Folder as FolderIcon, Edit, Delete, MoreVert,
+  Add, Search, Folder as FolderIcon, AssignmentTurnedIn, Edit, Delete, MoreVert,
   Sort, Article, Label, CalendarToday, Description, FilterList,
   DriveFileMove, ChevronRight, ExpandLess, ExpandMore
 } from '@mui/icons-material';
@@ -469,23 +469,25 @@ const NotesPage = () => {
             iconPosition="start"
             label={`All · ${notes.length}`}
           />
-          <Tab 
-            icon={<Description fontSize="small" />}
-            iconPosition="start"
-            label="Documents"
-          />
+
           <Tab 
             icon={<FolderIcon fontSize="small" />}
             iconPosition="start"
             label="Folders"
           />
-          <Tab label="Sources" />
+
+          <Tab 
+            icon={<AssignmentTurnedIn fontSize="small" />}
+            iconPosition="start"
+            label="Flashcards"
+          />
+
           <Tab 
             icon={<Label fontSize="small" />}
             iconPosition="start"
             label="Tags"
           />
-          <Tab label="Daily Notes" />
+
         </Tabs>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
