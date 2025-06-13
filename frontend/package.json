@@ -32,7 +32,7 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "proxy": "http://localhost:8000",
+  "proxy": "https://notes-app-6yx2.onrender.com",
   "eslintConfig": {
     "extends": [
       "react-app",
