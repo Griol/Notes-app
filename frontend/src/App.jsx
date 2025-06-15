@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import ReactDOM from 'react-dom';
 
 // Components
 import AppLayout from './components/AppLayout';
@@ -176,7 +177,7 @@ function App() {
               </AppLayout>
             </PrivateRoute>
           } />
-          
+
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />

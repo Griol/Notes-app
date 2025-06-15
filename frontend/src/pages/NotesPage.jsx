@@ -425,7 +425,7 @@ const NotesPage = () => {
                       <Typography variant="body2" color="text.secondary" component="span">•</Typography>
                       <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
                         <FolderIcon fontSize="small" sx={{ mr: 0.5, fontSize: '0.9rem' }} />
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary" component="span">
                           {note.folder.name}
                         </Typography>
                       </Box>

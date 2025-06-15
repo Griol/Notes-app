@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   TextField, Button, Box, Chip, Autocomplete, Paper, Typography, 
@@ -18,6 +18,10 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
@@ -34,6 +38,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import './tiptap.css';
 import { SketchPicker } from 'react-color';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 
 const NoteEditor = () => {
   const { id } = useParams();
@@ -52,12 +57,19 @@ const NoteEditor = () => {
   const [tagsAnchor, setTagsAnchor] = useState(null);
   const [colorAnchor, setColorAnchor] = useState(null);
   const [tableAnchor, setTableAnchor] = useState(null);
+  const [shouldShowTableMenu, setShouldShowTableMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: '0px', left: '0px' });
+  const [isMenuReady, setIsMenuReady] = useState(false);
 
   const theme = useTheme();
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        bulletList: { keepMarks: true, keepAttributes: false },
+        orderedList: { keepMarks: true, keepAttributes: false },
+        listItem: { keepMarks: true, keepAttributes: false },
+      }),
       Underline,
       TextStyle,
       Color,
@@ -66,12 +78,69 @@ const NoteEditor = () => {
       TableRow,
       TableHeader,
       TableCell,
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+        content: 'paragraph',
+      }),
     ],
     content: note.content,
     onUpdate: ({ editor }) => {
+      console.log("Editor content on update:", editor.getHTML());
       setNote(prev => ({ ...prev, content: editor.getHTML() }));
     },
   });
+
+  const floatingMenuRef = useRef(null);
+  const toolbarRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (!editor) return;
+
+    let timeoutId;
+
+    const handleEditorUpdate = () => {
+      const isActiveInTable = editor.isActive('table');
+      setShouldShowTableMenu(isActiveInTable);
+
+      if (isActiveInTable && floatingMenuRef.current && toolbarRef.current) {
+        const toolbarRect = toolbarRef.current.getBoundingClientRect();
+        const floatingMenuRect = floatingMenuRef.current.getBoundingClientRect();
+
+        // Only calculate and show menu if dimensions are valid
+        if (floatingMenuRect.height > 0 && toolbarRect.width > 0) {
+          const offsetAboveToolbar = 10; 
+          const topPos = `-${floatingMenuRect.height + offsetAboveToolbar}px`;
+          const leftPos = `${(toolbarRect.width / 2) - (floatingMenuRect.width / 2)}px`;
+
+          setMenuPosition({ top: topPos, left: leftPos });
+
+          // Delay setting isMenuReady to true to allow browser to render and stabilize dimensions
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => {
+            setIsMenuReady(true);
+          }, 50);
+        } else {
+          setIsMenuReady(false);
+        }
+      } else if (!isActiveInTable) {
+        setMenuPosition({ top: '0px', left: '0px' }); 
+        setIsMenuReady(false);
+      }
+    };
+
+    editor.on('update', handleEditorUpdate);
+    editor.on('selectionUpdate', handleEditorUpdate);
+
+    // Initial check when editor is ready
+    handleEditorUpdate();
+
+    return () => {
+      editor.off('update', handleEditorUpdate);
+      editor.off('selectionUpdate', handleEditorUpdate);
+      clearTimeout(timeoutId); // Cleanup timeout on unmount
+    };
+  }, [editor]);
 
   useEffect(() => {
     // Load all tags for autocomplete
@@ -359,17 +428,16 @@ const NoteEditor = () => {
           />
         </Box>
       </Popover>
-      <Box sx={{
-        position: 'fixed',
+      <Box ref={toolbarRef} sx={{
+        position: 'relative',
         left: 0,
         bottom: 0,
-        width: '100vw',
+        width: '100%',
         background: 'rgba(30,30,46,0.98)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         gap: 1,
-        zIndex: 1200,
         py: 1,
         borderTop: '1px solid #333',
       }}>
@@ -391,6 +459,9 @@ const NoteEditor = () => {
             presetColors={['#fff', '#000', '#f87171', '#facc15', '#4ade80', '#60a5fa', '#a78bfa', '#f472b6']}
           />
         </Popover>
+        <Tooltip title="Bullet list" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleBulletList().run()} color={editor.isActive('bulletList') ? 'primary' : 'default'}><FormatListBulletedIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Task list" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleTaskList().run()} color={editor.isActive('taskList') ? 'primary' : 'default'}><CheckBoxIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Ordered list" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleOrderedList().run()} color={editor.isActive('orderedList') ? 'primary' : 'default'}><FormatListNumberedIcon fontSize="small" /></IconButton></span></Tooltip>
         <Tooltip title="Align left" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('left').run()} color={editor.isActive({ textAlign: 'left' }) ? 'primary' : 'default'}><FormatAlignLeftIcon fontSize="small" /></IconButton></span></Tooltip>
         <Tooltip title="Align center" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('center').run()} color={editor.isActive({ textAlign: 'center' }) ? 'primary' : 'default'}><FormatAlignCenterIcon fontSize="small" /></IconButton></span></Tooltip>
         <Tooltip title="Align right" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('right').run()} color={editor.isActive({ textAlign: 'right' }) ? 'primary' : 'default'}><FormatAlignRightIcon fontSize="small" /></IconButton></span></Tooltip>
@@ -427,8 +498,36 @@ const NoteEditor = () => {
           </Box>
         </Popover>
       </Box>
+      {shouldShowTableMenu && (
+        <Box
+          ref={floatingMenuRef}
+          sx={{
+            position: 'absolute',
+            background: 'rgba(30,30,46,0.98)',
+            border: '1px solid #333',
+            borderRadius: 1,
+            p: 0.5,
+            display: 'flex',
+            gap: 0.5,
+            zIndex: 1000,
+            boxShadow: 3,
+            top: menuPosition.top,
+            left: menuPosition.left,
+            width: '350px',
+            height: '40px',
+          }}
+        >
+          <Tooltip title="Delete table" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteTable().run()}>🗑️</IconButton></span></Tooltip>
+          <Tooltip title="Add row before" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addRowBefore().run()}>⬆️</IconButton></span></Tooltip>
+          <Tooltip title="Add row after" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addRowAfter().run()}>⬇️</IconButton></span></Tooltip>
+          <Tooltip title="Delete row" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteRow().run()}>✖️ Row</IconButton></span></Tooltip>
+          <Tooltip title="Add column before" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addColumnBefore().run()}>⬅️</IconButton></span></Tooltip>
+          <Tooltip title="Add column after" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addColumnAfter().run()}>➡️</IconButton></span></Tooltip>
+          <Tooltip title="Delete column" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteColumn().run()}>✖️ Col</IconButton></span></Tooltip>
+        </Box>
+      )}
     </Box>
   );
 };
 
-export default NoteEditor; 
+export default NoteEditor;
