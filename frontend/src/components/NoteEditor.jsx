@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   TextField, Button, Box, Chip, Autocomplete, Paper, Typography, 
-  FormControl, InputLabel, Select, MenuItem, FormHelperText, IconButton
+  FormControl, InputLabel, Select, MenuItem, FormHelperText, IconButton, ListItemIcon, ListItemText, Menu
 } from '@mui/material';
 import { getNote, createNote, updateNote, getTags, getFolders } from '../api/notesApi';
-import { Folder as FolderIcon, LocalOffer as TagIcon } from '@mui/icons-material';
+import { Folder as FolderIcon, LocalOffer as TagIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -42,6 +42,9 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import CheckBoxOutlinedIcon from '@mui/icons-material/CheckBoxOutlined';
 import BulletList from '@tiptap/extension-bullet-list';
 import ListItem from '@tiptap/extension-list-item';
+import Description from '@mui/icons-material/Description';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const NoteEditor = () => {
   const { id } = useParams();
@@ -60,6 +63,7 @@ const NoteEditor = () => {
   const [tagsAnchor, setTagsAnchor] = useState(null);
   const [colorAnchor, setColorAnchor] = useState(null);
   const [tableAnchor, setTableAnchor] = useState(null);
+  const [menuAnchor, setMenuAnchor] = useState(null);
 
   const theme = useTheme();
 
@@ -262,6 +266,29 @@ const NoteEditor = () => {
     handleTableClose();
   };
 
+  const handleMenuOpen = (event) => {
+    setMenuAnchor(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleExportPDF = async () => {
+    handleMenuClose();
+    const contentElement = document.querySelector('.ProseMirror');
+    if (!contentElement) return;
+    const canvas = await html2canvas(contentElement, { backgroundColor: '#fff', scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pageWidth - 20;
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 10, 20, pdfWidth, pdfHeight);
+    pdf.save(`${note.title || 'note'}.pdf`);
+  };
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, p: 0, background: 'transparent', position: 'relative', pb: 8 }}>
       <form onSubmit={handleSubmit} autoComplete="off">
@@ -285,6 +312,9 @@ const NoteEditor = () => {
           </IconButton>
           <IconButton size="small" onClick={handleTagsButtonClick} aria-label="Select tags">
             <TagIcon fontSize="small" />
+          </IconButton>
+          <IconButton size="small" onClick={handleMenuOpen} aria-label="Note menu">
+            <MoreVertIcon fontSize="small" />
           </IconButton>
           {note.folder && (
             <Typography variant="body2" sx={{ ml: 1 }} color="text.secondary">
@@ -499,6 +529,18 @@ const NoteEditor = () => {
           </Box>
         )}
       </Box>
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleExportPDF}>
+          <ListItemIcon>
+            <Description fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Экспорт в PDF" />
+        </MenuItem>
+      </Menu>
     </Box>
   );
 };
