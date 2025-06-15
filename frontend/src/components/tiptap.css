@@ -38,3 +38,32 @@ th {
 .ProseMirror-gapcursor {
   display: none;
 }
+
+ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+ul[data-type="taskList"] p {
+  margin: 0;
+}
+
+ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  padding-left: 0;
+}
+
+ul[data-type="taskList"] li > label {
+  flex-shrink: 0;
+  margin-right: 0.5em;
+  user-select: none;
+}
+
+ul[data-type="taskList"] li > div {
+  flex-grow: 1;
+}
+
+ul[data-type="taskList"] input[type="checkbox"] {
+  cursor: pointer;
+}
