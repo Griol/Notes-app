@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Используем прокси Vite, путь без хоста
-const API_URL = 'https://notes-app-6yx2.onrender.com/api';
+const API_URL = 'http://notes-app-6yx2.onrender.com/api';
 
 // Create axios instance with base URL and default headers
 const api = axios.create({
