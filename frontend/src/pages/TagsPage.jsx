@@ -32,8 +32,8 @@ const TagsPage = () => {
       setTags(response.data);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching tags:', err);
-      setError('Failed to load tags');
+      console.error('Ошибка получения тегов:', err);
+      setError('Не удалось загрузить теги');
       setLoading(false);
     }
   };
@@ -47,8 +47,8 @@ const TagsPage = () => {
       setNewTagName('');
       fetchTags();
     } catch (err) {
-      console.error('Error creating tag:', err);
-      setError('Failed to create tag');
+      console.error('Ошибка создания тега:', err);
+      setError('Не удалось создать тег');
     }
   };
 
@@ -58,8 +58,8 @@ const TagsPage = () => {
       setConfirmDelete(null);
       fetchTags();
     } catch (err) {
-      console.error('Error deleting tag:', err);
-      setError('Failed to delete tag');
+      console.error('Ошибка удаления тега:', err);
+      setError('Не удалось удалить тег');
     }
   };
 
@@ -72,8 +72,8 @@ const TagsPage = () => {
       setOpenTagDialog(true);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching tag notes:', err);
-      setError('Failed to load tag notes');
+      console.error('Ошибка получения связанных заметок:', err);
+      setError('Не удалось загрузить связанные заметки');
       setLoading(false);
     }
   };
@@ -98,7 +98,7 @@ const TagsPage = () => {
         <Box component="form" onSubmit={handleCreateTag} sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <TextField
             fullWidth
-            label="New Tag Name"
+            label="Название"
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             variant="outlined"
@@ -112,14 +112,14 @@ const TagsPage = () => {
             startIcon={<Add />}
             disabled={!newTagName.trim()}
           >
-            Add Tag
+            Добавить тег
           </Button>
         </Box>
         
         <Box sx={{ mb: 3 }}>
           <TextField
             fullWidth
-            label="Search Tags"
+            label="Поиск тегов"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             variant="outlined"
@@ -127,7 +127,7 @@ const TagsPage = () => {
             InputProps={{
               startAdornment: <Search fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
             }}
-            placeholder="Filter tags..."
+            placeholder="Фильтрация тегов..."
           />
         </Box>
 
@@ -168,7 +168,7 @@ const TagsPage = () => {
         </DialogTitle>
         <DialogContent dividers>
           <Typography variant="subtitle1" gutterBottom>
-            Notes with this tag:
+            Связанные заметки:
           </Typography>
           {tagNotes.length > 0 ? (
             <List>
@@ -189,7 +189,7 @@ const TagsPage = () => {
             </List>
           ) : (
             <Typography color="text.secondary" align="center">
-              No notes found with this tag
+              Связанные заметки не найдены
             </Typography>
           )}
         </DialogContent>
@@ -200,10 +200,10 @@ const TagsPage = () => {
 
       {/* Confirm Delete Dialog */}
       <Dialog open={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)}>
-        <DialogTitle>Delete Tag</DialogTitle>
+        <DialogTitle>Удалить тег</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete the tag "{confirmDelete?.name}"?
+            Вы уверены что хотите удалить тег?"{confirmDelete?.name}"?
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -212,7 +212,7 @@ const TagsPage = () => {
             color="error" 
             onClick={() => handleDeleteTag(confirmDelete.id)}
           >
-            Delete
+            Удалить
           </Button>
         </DialogActions>
       </Dialog>

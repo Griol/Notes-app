@@ -89,8 +89,8 @@ const ProfilePage = () => {
       }));
       setLoading(false);
     } catch (err) {
-      console.error('Error loading profile:', err);
-      setError('Failed to load profile data');
+      console.error('Ошибка загрузки профиля:', err);
+      setError('Не удалось загрузить профиль');
       setLoading(false);
     }
   };
@@ -146,17 +146,17 @@ const ProfilePage = () => {
     // Validate passwords if changing password
     if (profile.new_password || profile.confirm_password || profile.current_password) {
       if (!profile.current_password) {
-        setError('Current password is required to change password');
+        setError('Для смены пароля требуется текущий пароль');
         setSaving(false);
         return;
       }
       if (profile.new_password !== profile.confirm_password) {
-        setError('New passwords do not match');
+        setError('Пароли не совпадают');
         setSaving(false);
         return;
       }
       if (profile.new_password.length < 8) {
-        setError('New password must be at least 8 characters long');
+        setError('Новый пароль должен быть не менее 8 символов');
         setSaving(false);
         return;
       }
@@ -177,7 +177,7 @@ const ProfilePage = () => {
       }
 
       await updateUserProfile(updateData);
-      setSuccess('Profile updated successfully');
+      setSuccess('Профиль успешно обновлен');
       setIsEditing(false);
       
       // Clear password fields
@@ -188,14 +188,14 @@ const ProfilePage = () => {
         confirm_password: ''
       }));
     } catch (err) {
-      console.error('Error updating profile:', err);
+      console.error('Ошибка обновления профиля:', err);
       if (err.response?.data) {
         const errorMessages = Object.entries(err.response.data)
           .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
           .join('\n');
         setError(errorMessages);
       } else {
-        setError('Failed to update profile');
+        setError('Ошибка обновления профиля');
       }
     } finally {
       setSaving(false);
@@ -207,7 +207,7 @@ const ProfilePage = () => {
       await logoutUser();
       navigate('/login');
     } catch (err) {
-      setError('Failed to logout');
+      setError('Ошибка выхода');
     }
   };
 
@@ -247,7 +247,7 @@ const ProfilePage = () => {
             startIcon={isEditing ? <SaveIcon /> : <EditIcon />}
             onClick={isEditing ? handleSubmit : handleEdit}
           >
-            {isEditing ? 'Save' : 'Edit Profile'}
+            {isEditing ? 'Сохранить' : 'Редактировать профиль'}
           </Button>
         </Box>
 
@@ -266,7 +266,7 @@ const ProfilePage = () => {
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
             <Typography variant="h6" gutterBottom>
-              Personal Information
+              Персональная информация
             </Typography>
             <List>
               <ListItem>
@@ -274,7 +274,7 @@ const ProfilePage = () => {
                   <PersonIcon />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Username"
+                  primary="Логин"
                   secondary={
                     isEditing ? (
                       <TextField
@@ -296,7 +296,7 @@ const ProfilePage = () => {
                   <EmailIcon />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Email"
+                  primary="Почта"
                   secondary={
                     isEditing ? (
                       <TextField
@@ -318,7 +318,7 @@ const ProfilePage = () => {
                   <PersonIcon />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Full Name"
+                  primary="ФИО"
                   secondary={
                     isEditing ? (
                       <Box sx={{ display: 'flex', gap: 1 }}>
@@ -326,7 +326,7 @@ const ProfilePage = () => {
                           name="first_name"
                           value={profile.first_name}
                           onChange={handleChange}
-                          placeholder="First Name"
+                          placeholder="Имя"
                           size="small"
                           margin="dense"
                         />
@@ -334,7 +334,7 @@ const ProfilePage = () => {
                           name="last_name"
                           value={profile.last_name}
                           onChange={handleChange}
-                          placeholder="Last Name"
+                          placeholder="Фамилия"
                           size="small"
                           margin="dense"
                         />
@@ -343,61 +343,6 @@ const ProfilePage = () => {
                       `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Not set'
                     )
                   }
-                />
-              </ListItem>
-            </List>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Settings
-            </Typography>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <PaletteIcon />
-                </ListItemIcon>
-                <ListItemText primary="Dark Mode" />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.darkMode}
-                      onChange={handleSettingChange('darkMode')}
-                    />
-                  }
-                  label=""
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <NotificationsIcon />
-                </ListItemIcon>
-                <ListItemText primary="Email Notifications" />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.emailNotifications}
-                      onChange={handleSettingChange('emailNotifications')}
-                    />
-                  }
-                  label=""
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <LanguageIcon />
-                </ListItemIcon>
-                <ListItemText primary="Language" />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.language === 'ru'}
-                      onChange={(e) => handleLanguageChange({
-                        target: { value: e.target.checked ? 'ru' : 'en' }
-                      })}
-                    />
-                  }
-                  label="Russian"
                 />
               </ListItem>
             </List>
@@ -412,7 +357,7 @@ const ProfilePage = () => {
               <Grid item xs={12}>
                 <Divider sx={{ my: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Change Password
+                    Изменить пароль
                   </Typography>
                 </Divider>
               </Grid>
@@ -420,7 +365,7 @@ const ProfilePage = () => {
               <Grid item xs={12} md={4}>
                 <TextField
                   fullWidth
-                  label="Current Password"
+                  label="Текущий пароль"
                   name="current_password"
                   type={showPassword.current ? 'text' : 'password'}
                   value={profile.current_password}
@@ -443,7 +388,7 @@ const ProfilePage = () => {
               <Grid item xs={12} md={4}>
                 <TextField
                   fullWidth
-                  label="New Password"
+                  label="Новый пароль"
                   name="new_password"
                   type={showPassword.new ? 'text' : 'password'}
                   value={profile.new_password}
@@ -466,7 +411,7 @@ const ProfilePage = () => {
               <Grid item xs={12} md={4}>
                 <TextField
                   fullWidth
-                  label="Confirm New Password"
+                  label="Повторите новый пароль"
                   name="confirm_password"
                   type={showPassword.confirm ? 'text' : 'password'}
                   value={profile.confirm_password}
@@ -494,7 +439,7 @@ const ProfilePage = () => {
                 onClick={handleCancel}
                 disabled={saving}
               >
-                Cancel
+                Отмена
               </Button>
               <Button
                 type="submit"
@@ -502,7 +447,7 @@ const ProfilePage = () => {
                 startIcon={<SaveIcon />}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? 'Сохранение...' : 'Сохранить изменения'}
               </Button>
             </Box>
           </Box>
@@ -515,7 +460,7 @@ const ProfilePage = () => {
             startIcon={<LogoutIcon />}
             onClick={() => setLogoutDialogOpen(true)}
           >
-            Logout
+            Выход
           </Button>
         </Box>
       </Paper>
@@ -524,18 +469,18 @@ const ProfilePage = () => {
         open={logoutDialogOpen}
         onClose={() => setLogoutDialogOpen(false)}
       >
-        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogTitle>Подтвердите выход</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to logout?
+            Вы уверены что хотите выйти?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setLogoutDialogOpen(false)}>
-            Cancel
+            Отмена
           </Button>
           <Button onClick={handleLogout} color="error" variant="contained">
-            Logout
+            Выход
           </Button>
         </DialogActions>
       </Dialog>

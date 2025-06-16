@@ -43,9 +43,9 @@ const NotesPage = () => {
 
   // Determine page title based on URL
   const pageTitle = 
-    folderId ? folder?.name || 'Folder' : 
-    searchTerm ? `Search: ${searchTerm}` : 
-    tagFilter ? `Tag: ${tagFilter}` : 'All Notes';
+    folderId ? folder?.name || 'Папки' : 
+    searchTerm ? `Поиск: ${searchTerm}` : 
+    tagFilter ? `Тег: ${tagFilter}` : 'Все заметки';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,8 +97,8 @@ const NotesPage = () => {
         // Fetch notes with filters
         fetchNotes();
       } catch (err) {
-        console.error('Error loading data:', err);
-        setError('Failed to load notes');
+        console.error('Ошибка загрузки данных:', err);
+        setError('Не удалось загрузить заметки');
         setLoading(false);
       }
     };
@@ -148,7 +148,7 @@ const NotesPage = () => {
       setNotes(sortedNotes);
       setLoading(false);
     } catch (err) {
-      setError('Failed to load notes');
+      setError('Не удалось загрузить заметки');
       setLoading(false);
     }
   };
@@ -210,7 +210,7 @@ const NotesPage = () => {
         fetchNotes();
         handleNoteMenuClose();
       } catch (err) {
-        setError('Failed to delete note');
+        setError('Не удалось удалить заметку');
       }
     }
   };
@@ -286,7 +286,7 @@ const NotesPage = () => {
         setFolders(foldersResponse.data);
         fetchNotes();
       } catch (err) {
-        setError('Failed to delete folder');
+        setError('Не удалось удалить папку');
       }
     }
     handleFolderMenuClose();
@@ -365,7 +365,7 @@ const NotesPage = () => {
     return (
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6">Folders</Typography>
+          <Typography variant="h6">Папки</Typography>
           <Button
             variant="outlined"
             size="small"
@@ -373,7 +373,7 @@ const NotesPage = () => {
             onClick={handleAddFolder}
             sx={{ textTransform: 'none' }}
           >
-            New Folder
+            Новая папка
           </Button>
         </Box>
         <List>
@@ -386,7 +386,7 @@ const NotesPage = () => {
   const renderNoteList = () => (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Notes</Typography>
+        <Typography variant="h6">Заметки</Typography>
         <Button
           variant="contained"
           size="small"
@@ -394,7 +394,7 @@ const NotesPage = () => {
           onClick={handleCreateNote}
           sx={{ textTransform: 'none' }}
         >
-          New Note
+          Новая заметка
         </Button>
       </Box>
       <List>
@@ -467,25 +467,13 @@ const NotesPage = () => {
           <Tab 
             icon={<Article fontSize="small" />}
             iconPosition="start"
-            label={`All · ${notes.length}`}
+            label={`Всё · ${notes.length}`}
           />
 
           <Tab 
             icon={<FolderIcon fontSize="small" />}
             iconPosition="start"
-            label="Folders"
-          />
-
-          <Tab 
-            icon={<AssignmentTurnedIn fontSize="small" />}
-            iconPosition="start"
-            label="Flashcards"
-          />
-
-          <Tab 
-            icon={<Label fontSize="small" />}
-            iconPosition="start"
-            label="Tags"
+            label="Папки"
           />
 
         </Tabs>
@@ -499,7 +487,7 @@ const NotesPage = () => {
             onClick={handleSortMenuOpen}
             sx={{ textTransform: 'none' }}
           >
-            Sort
+            Сортировка
           </Button>
           <Button
             variant="contained"
@@ -509,7 +497,7 @@ const NotesPage = () => {
             onClick={handleCreateNote}
             sx={{ textTransform: 'none' }}
           >
-            New Note
+            Новая заметка
           </Button>
         </Box>
       </Box>
@@ -520,7 +508,7 @@ const NotesPage = () => {
         sx={{ p: 1.5, mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}
       >
         <TextField
-          placeholder="Search notes..."
+          placeholder="Поиск заметок..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           size="small"
@@ -546,7 +534,7 @@ const NotesPage = () => {
             }
             renderValue={(selected) => {
               if (!selected) {
-                return <Typography color="text.secondary">Filter by tag</Typography>;
+                return <Typography color="text.secondary">Фильтрация по тегу</Typography>;
               }
               const tagName = availableTags.find(t => t.id.toString() === selected)?.name || selected;
               return <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -556,7 +544,7 @@ const NotesPage = () => {
             }}
           >
             <MenuItem value="">
-              <em>No filter</em>
+              <em>Без фильтра</em>
             </MenuItem>
             {availableTags.map(tag => (
               <MenuItem key={tag.id} value={tag.id.toString()}>
@@ -574,7 +562,7 @@ const NotesPage = () => {
           variant="contained"
           size="small"
         >
-          Search
+          Поиск
         </Button>
       </Paper>
       
@@ -589,7 +577,7 @@ const NotesPage = () => {
       </Typography>
       
       {loading ? (
-        <Typography>Loading notes...</Typography>
+        <Typography>Загрузка заметок...</Typography>
       ) : (
         <>
           {renderFolderList()}
@@ -611,19 +599,19 @@ const NotesPage = () => {
           <ListItemIcon>
             <Edit fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Edit" />
+          <ListItemText primary="Редактировать" />
         </MenuItem>
         <MenuItem onClick={handleMoveNote}>
           <ListItemIcon>
             <DriveFileMove fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Move to Folder" />
+          <ListItemText primary="Переместить в папку" />
         </MenuItem>
         <MenuItem onClick={handleDeleteNote}>
           <ListItemIcon>
             <Delete fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Delete" />
+          <ListItemText primary="Удалить" />
         </MenuItem>
       </Menu>
       
@@ -634,7 +622,7 @@ const NotesPage = () => {
         onClose={handleSortMenuClose}
       >
         <MenuItem onClick={() => handleSort('title')}>
-          <ListItemText primary="Title" />
+          <ListItemText primary="Название" />
           {sortBy === 'title' && (
             <Typography variant="caption" color="primary">
               {sortDirection === 'asc' ? '(A-Z)' : '(Z-A)'}
@@ -642,18 +630,18 @@ const NotesPage = () => {
           )}
         </MenuItem>
         <MenuItem onClick={() => handleSort('updated_at')}>
-          <ListItemText primary="Last Updated" />
+          <ListItemText primary="Недавно измененное" />
           {sortBy === 'updated_at' && (
             <Typography variant="caption" color="primary">
-              {sortDirection === 'asc' ? '(Oldest)' : '(Newest)'}
+              {sortDirection === 'asc' ? '(Старейшее)' : '(Новейшее)'}
             </Typography>
           )}
         </MenuItem>
         <MenuItem onClick={() => handleSort('created_at')}>
-          <ListItemText primary="Created Date" />
+          <ListItemText primary="По добавленнюю" />
           {sortBy === 'created_at' && (
             <Typography variant="caption" color="primary">
-              {sortDirection === 'asc' ? '(Oldest)' : '(Newest)'}
+              {sortDirection === 'asc' ? '(Старейшее)' : '(Новейшее)'}
             </Typography>
           )}
         </MenuItem>
@@ -669,13 +657,13 @@ const NotesPage = () => {
           <ListItemIcon>
             <Edit fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Edit" />
+          <ListItemText primary="Редактировать" />
         </MenuItem>
         <MenuItem onClick={handleDeleteFolder}>
           <ListItemIcon>
             <Delete fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Delete" />
+          <ListItemText primary="Удалить" />
         </MenuItem>
       </Menu>
       
