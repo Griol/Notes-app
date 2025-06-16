@@ -88,3 +88,15 @@ class DailyFlashcardStat(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.date}: {self.solved_count}"
+
+
+class NoteAttachment(models.Model):
+    note = models.ForeignKey('Note', related_name='attachments', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='attachments/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+
+class NoteImage(models.Model):
+    note = models.ForeignKey('Note', related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='note_images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)

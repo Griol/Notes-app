@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     TagViewSet, FolderViewSet, NoteViewSet,
     FolderStructureView, SidebarView, UserProfileView,
-    FlashcardViewSet, FlashcardStatViewSet, DailyFlashcardStatViewSet
+    FlashcardViewSet, FlashcardStatViewSet, DailyFlashcardStatViewSet,
+    NoteAttachmentViewSet, NoteImageViewSet
 )
 
 router = DefaultRouter()
@@ -13,6 +14,8 @@ router.register(r'notes', NoteViewSet, basename='note')
 router.register(r'flashcards', FlashcardViewSet, basename='flashcard')
 router.register(r'flashcard-stats', FlashcardStatViewSet, basename='flashcardstat')
 router.register(r'daily-flashcard-stats', DailyFlashcardStatViewSet, basename='dailyflashcardstat')
+router.register(r'attachments', NoteAttachmentViewSet, basename='attachment')
+router.register(r'images', NoteImageViewSet, basename='image')
 
 urlpatterns = [
     path('', include(router.urls)),

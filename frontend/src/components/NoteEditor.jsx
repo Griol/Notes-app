@@ -45,6 +45,7 @@ import ListItem from '@tiptap/extension-list-item';
 import Description from '@mui/icons-material/Description';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import CustomImage from './CustomImage';
 
 const NoteEditor = () => {
   const { id } = useParams();
@@ -64,6 +65,10 @@ const NoteEditor = () => {
   const [colorAnchor, setColorAnchor] = useState(null);
   const [tableAnchor, setTableAnchor] = useState(null);
   const [menuAnchor, setMenuAnchor] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState(null);
 
   const theme = useTheme();
 
@@ -89,6 +94,7 @@ const NoteEditor = () => {
         nested: true,
       }),
       ListItem,
+      CustomImage,
     ],
     content: note.content,
     onUpdate: ({ editor }) => {
@@ -289,6 +295,75 @@ const NoteEditor = () => {
     pdf.save(`${note.title || 'note'}.pdf`);
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      setUploadError('Можно загружать только PDF-файлы');
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('note', note.id);
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/attachments/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки файла');
+      }
+      const newAttachment = await response.json();
+      setNote(prev => ({
+        ...prev,
+        attachments: [...(prev.attachments || []), newAttachment]
+      }));
+    } catch (err) {
+      setUploadError('Ошибка загрузки файла');
+    } finally {
+      setUploading(false);
+    }
+  };
+/*
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setImageUploadError('Можно загружать только изображения');
+      return;
+    }
+    setImageUploading(true);
+    setImageUploadError(null);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('note', note.id);
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/images/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки изображения');
+      }
+      const data = await response.json();
+      editor.chain().focus().setImage({ src: data.image }).run();
+    } catch (err) {
+      setImageUploadError('Ошибка загрузки изображения');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+*/
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, p: 0, background: 'transparent', position: 'relative', pb: 8 }}>
       <form onSubmit={handleSubmit} autoComplete="off">
@@ -332,9 +407,63 @@ const NoteEditor = () => {
             </Box>
           )}
         </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+          <Button
+            variant="contained"
+            component="label"
+            disabled={uploading}
+            sx={{ mr: 1 }}
+          >
+            Прикрепить PDF
+            <input
+              type="file"
+              accept="application/pdf"
+              hidden
+              onChange={handleFileChange}
+            />
+          </Button>
+          {note.attachments && note.attachments.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {note.attachments.map(att => {
+                const filename = decodeURIComponent(att.file.split('/').pop());
+                const shortName = filename.length > 10 ? filename.slice(0, 10) + '…' : filename;
+                return (
+                  <a
+                    key={att.id}
+                    href={att.file}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'none', color: '#6366f1', fontWeight: 500 }}
+                    title={filename}
+                  >
+                    {shortName}
+                  </a>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
+        {uploadError && <Typography color="error" sx={{ mb: 1 }}>{uploadError}</Typography>}
+        {/*<Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+          <Button
+            variant="contained"
+            component="label"
+            disabled={imageUploading || !note.id}
+            sx={{ mr: 1 }}
+          >
+            Вставить изображение
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleImageUpload}
+            />
+          </Button>
+          {imageUploadError && <Typography color="error" sx={{ mb: 1 }}>{imageUploadError}</Typography>}
+        </Box>*/}
         <Box
           sx={{
-            minHeight: 200,
+         minHeight: 200,
             background: 'transparent',
             color: '#fff',
             border: 'none',

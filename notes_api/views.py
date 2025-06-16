@@ -1,16 +1,17 @@
 from django.shortcuts import render
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import RestrictedError
 from django.contrib.auth import get_user_model
-from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat
+from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat, NoteAttachment, NoteImage
 from .serializers import (
     TagSerializer, FolderSerializer, NoteSerializer,
     FolderStructureSerializer, SidebarSerializer, UserProfileSerializer,
-    FlashcardSerializer, FlashcardStatSerializer, DailyFlashcardStatSerializer
+    FlashcardSerializer, FlashcardStatSerializer, DailyFlashcardStatSerializer,
+    NoteAttachmentSerializer, NoteImageSerializer
 )
 from .filters import NoteFilter
 
@@ -158,3 +159,37 @@ class DailyFlashcardStatViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return DailyFlashcardStat.objects.filter(user=self.request.user)
+
+
+class NoteAttachmentViewSet(viewsets.ModelViewSet):
+    queryset = NoteAttachment.objects.all()
+    serializer_class = NoteAttachmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Показывать только вложения заметок пользователя
+        return NoteAttachment.objects.filter(note__user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Проверить, что пользователь владеет заметкой
+        note = serializer.validated_data['note']
+        if note.user != self.request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You do not have permission to add attachments to this note.')
+        serializer.save()
+
+
+class NoteImageViewSet(viewsets.ModelViewSet):
+    queryset = NoteImage.objects.all()
+    serializer_class = NoteImageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return NoteImage.objects.filter(note__user=self.request.user)
+
+    def perform_create(self, serializer):
+        note = serializer.validated_data['note']
+        if note.user != self.request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You do not have permission to add images to this note.')
+        serializer.save()

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat
+from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat, NoteAttachment, NoteImage
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -37,6 +37,14 @@ class FolderSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class NoteAttachmentSerializer(serializers.ModelSerializer):
+    note = serializers.PrimaryKeyRelatedField(queryset=Note.objects.all())
+    class Meta:
+        model = NoteAttachment
+        fields = ['id', 'note', 'file', 'uploaded_at']
+        read_only_fields = ['id', 'uploaded_at']
+
+
 class NoteSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, required=False, read_only=True)
     tag_ids = serializers.PrimaryKeyRelatedField(
@@ -47,14 +55,15 @@ class NoteSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    attachments = NoteAttachmentSerializer(many=True, read_only=True)
     
     class Meta:
         model = Note
         fields = [
             'id', 'title', 'content', 'folder', 'tags', 'tag_ids', 
-            'tag_names', 'created_at', 'updated_at'
+            'tag_names', 'created_at', 'updated_at', 'attachments'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'attachments']
 
     def create(self, validated_data):
         # Handle tag names if provided
@@ -193,4 +202,12 @@ class DailyFlashcardStatSerializer(serializers.ModelSerializer):
     class Meta:
         model = DailyFlashcardStat
         fields = ['id', 'date', 'solved_count']
-        read_only_fields = ['id', 'date', 'solved_count'] 
+        read_only_fields = ['id', 'date', 'solved_count']
+
+
+class NoteImageSerializer(serializers.ModelSerializer):
+    note = serializers.PrimaryKeyRelatedField(queryset=Note.objects.all())
+    class Meta:
+        model = NoteImage
+        fields = ['id', 'note', 'image', 'uploaded_at']
+        read_only_fields = ['id', 'uploaded_at'] 

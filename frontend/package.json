@@ -26,7 +26,8 @@
     "react": "^18.2.0",
     "react-color": "^2.19.3",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.1"
+    "react-router-dom": "^6.21.1",
+    "tiptap-extension-resizable-image": "^1.0.7"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",

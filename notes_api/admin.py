@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat
+from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat, NoteAttachment, NoteImage
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -43,4 +43,14 @@ class FlashcardStatAdmin(admin.ModelAdmin):
 class DailyFlashcardStatAdmin(admin.ModelAdmin):
     list_display = ('user', 'date', 'solved_count')
     list_filter = ('user', 'date', 'solved_count')
+
+@admin.register(NoteAttachment)
+class NoteAttachmentAdmin(admin.ModelAdmin):
+    list_display = ('note', 'file', 'uploaded_at')
+    search_fields = ('note__title', 'file')
+
+@admin.register(NoteImage)
+class NoteImageAdmin(admin.ModelAdmin):
+    list_display = ('note', 'image', 'uploaded_at')
+    search_fields = ('note__title', 'image')
 

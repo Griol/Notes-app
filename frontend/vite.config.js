@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://notes-app-6yx2.onrender.com',
+        target: "https://notes-app-6yx2.onrender.com",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
