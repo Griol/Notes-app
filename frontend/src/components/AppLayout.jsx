@@ -166,6 +166,11 @@ const AppLayout = ({ children }) => {
     navigate('/note/new');
   };
 
+  const handleCreateFlashcard = () => {
+    handleCreateMenuClose();
+    navigate('/flashcard/new');
+  };
+
   const handleProfileClick = () => {
     handleProfileMenuClose();
     navigate('/profile');
