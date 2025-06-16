@@ -37,8 +37,8 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
       const response = await getFolders();
       setFolders(response.data);
     } catch (err) {
-      console.error('Error loading folders:', err);
-      setError('Failed to load folders');
+      console.error('Ошибка загрузки папок:', err);
+      setError('Не удалось загрузить папки');
     }
   };
 
@@ -100,14 +100,14 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
       onSuccess && onSuccess(selectedFolder);
       onClose();
     } catch (err) {
-      console.error('Error moving note:', err);
+      console.error('Ошибка перемещения заметки:', err);
       if (err.response && err.response.data) {
         const errorMessages = Object.entries(err.response.data)
           .map(([field, message]) => `${field}: ${message}`)
           .join(', ');
-        setError(`Failed to move note: ${errorMessages}`);
+        setError(`Не удалось переместить заметку: ${errorMessages}`);
       } else {
-        setError(`Failed to move note: ${err.message}`);
+        setError(`Не удалось переместить заметку: ${err.message}`);
       }
       setLoading(false);
     }
@@ -118,7 +118,7 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Move Note to Folder</DialogTitle>
+      <DialogTitle>Переместить заметку в папку</DialogTitle>
       <DialogContent>
         {error && (
           <Typography color="error" variant="body2" sx={{ mb: 2 }}>
@@ -127,13 +127,13 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
         )}
         <Box sx={{ mt: 2 }}>
           <FormControl fullWidth>
-            <InputLabel id="move-folder-label">Folder</InputLabel>
+            <InputLabel id="move-folder-label">Папка</InputLabel>
             <Select
               labelId="move-folder-label"
               id="move-folder"
               value={selectedFolder || ''}
               onChange={handleChange}
-              label="Folder"
+              label="Папка"
             >
               <MenuItem value="">
                 <em>None (Root)</em>
@@ -145,7 +145,7 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={loading}>
-          Cancel
+          Отмена
         </Button>
         <Button 
           onClick={handleMove} 
@@ -153,7 +153,7 @@ const MoveNoteDialog = ({ open, onClose, note, onSuccess }) => {
           variant="contained"
           disabled={loading}
         >
-          Move
+          Переместить
         </Button>
       </DialogActions>
     </Dialog>

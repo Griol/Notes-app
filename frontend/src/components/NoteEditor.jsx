@@ -130,7 +130,7 @@ const NoteEditor = () => {
         const response = await getTags();
         setAllTags(response.data.map(tag => tag.name));
       } catch (err) {
-        console.error('Error loading tags:', err);
+        console.error('Ошибка загрузки тега:', err);
       }
     };
 
@@ -140,7 +140,7 @@ const NoteEditor = () => {
         const response = await getFolders();
         setFolders(response.data);
       } catch (err) {
-        console.error('Error loading folders:', err);
+        console.error('Ошибка загрузки папок:', err);
       }
     };
 
@@ -160,7 +160,7 @@ const NoteEditor = () => {
           editor.commands.setContent(response.data.content);
           setLoading(false);
         } catch (err) {
-          setError('Failed to load note');
+          setError('Ошибка загрузки заметки');
           setLoading(false);
         }
       };
@@ -191,8 +191,8 @@ const NoteEditor = () => {
       }
       navigate(-1);
     } catch (err) {
-      console.error('Error saving note:', err);
-      setError('Failed to save note');
+      console.error('Ошибка сохранения заметки:', err);
+      setError('Не удалось сохранить заметку');
       setLoading(false);
     }
   };
@@ -298,7 +298,7 @@ const NoteEditor = () => {
           name="title"
           value={note.title}
           onChange={handleChange}
-          placeholder="Title"
+          placeholder="Название"
           InputProps={{
             disableUnderline: true,
             style: { fontSize: 32, fontWeight: 700, background: 'transparent', border: 'none', color: '#fff' }
@@ -307,13 +307,13 @@ const NoteEditor = () => {
           autoFocus
         />
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-          <IconButton size="small" onClick={handleFolderButtonClick} aria-label="Select folder">
+          <IconButton size="small" onClick={handleFolderButtonClick} aria-label="Выбрать папку">
             <FolderIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" onClick={handleTagsButtonClick} aria-label="Select tags">
+          <IconButton size="small" onClick={handleTagsButtonClick} aria-label="Выбрать заметку">
             <TagIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" onClick={handleMenuOpen} aria-label="Note menu">
+          <IconButton size="small" onClick={handleMenuOpen} aria-label="Меню заметки">
             <MoreVertIcon fontSize="small" />
           </IconButton>
           {note.folder && (
@@ -371,7 +371,7 @@ const NoteEditor = () => {
             color="primary"
             disabled={loading || !note.title || !note.content}
           >
-            {loading ? 'Saving...' : id ? 'Update' : 'Create'}
+            {loading ? 'Сохранение...' : id ? 'Обновить' : 'Создать'}
           </Button>
         </Box>
       </form>
@@ -382,7 +382,7 @@ const NoteEditor = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
         <Box sx={{ p: 2, minWidth: 200 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>Select Folder</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>Выбрать папку</Typography>
           <FormControl fullWidth>
             <Select
               size="small"
@@ -406,7 +406,7 @@ const NoteEditor = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
         <Box sx={{ p: 2, minWidth: 250 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>Tags</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>Теги</Typography>
           <Autocomplete
             multiple
             freeSolo
@@ -419,8 +419,8 @@ const NoteEditor = () => {
               <TextField
                 {...params}
                 size="small"
-                label="Add tags"
-                placeholder="Add tags"
+                label="Добавить теги"
+                placeholder="Добавить теги"
               />
             )}
             renderTags={(value, getTagProps) =>
@@ -449,10 +449,10 @@ const NoteEditor = () => {
         py: 1,
         borderTop: '1px solid #333',
       }}>
-        <Tooltip title="Bold" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleBold().run()} color={editor.isActive('bold') ? 'primary' : 'default'}><FormatBoldIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Italic" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleItalic().run()} color={editor.isActive('italic') ? 'primary' : 'default'}><FormatItalicIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Underline" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleUnderline().run()} color={editor.isActive('underline') ? 'primary' : 'default'}><FormatUnderlinedIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Text color" arrow><span><IconButton size="small" onClick={handleColorClick}><FormatColorTextIcon fontSize="small" sx={{ color: editor.getAttributes('textStyle').color || '#fff' }} /></IconButton></span></Tooltip>
+        <Tooltip title="Полужирный" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleBold().run()} color={editor.isActive('bold') ? 'primary' : 'default'}><FormatBoldIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Курсив" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleItalic().run()} color={editor.isActive('italic') ? 'primary' : 'default'}><FormatItalicIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Подчеркивание" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleUnderline().run()} color={editor.isActive('underline') ? 'primary' : 'default'}><FormatUnderlinedIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Цвет текста" arrow><span><IconButton size="small" onClick={handleColorClick}><FormatColorTextIcon fontSize="small" sx={{ color: editor.getAttributes('textStyle').color || '#fff' }} /></IconButton></span></Tooltip>
         <Popover
           open={Boolean(colorAnchor)}
           anchorEl={colorAnchor}
@@ -467,15 +467,15 @@ const NoteEditor = () => {
             presetColors={['#fff', '#000', '#f87171', '#facc15', '#4ade80', '#60a5fa', '#a78bfa', '#f472b6']}
           />
         </Popover>
-        <Tooltip title="Bullet list" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleBulletList().run()} color={editor.isActive('bulletList') ? 'primary' : 'default'}><FormatListBulletedIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Task list" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleTaskList().run()} color={editor.isActive('taskList') ? 'primary' : 'default'}><CheckBoxOutlinedIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Ordered list" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleOrderedList().run()} color={editor.isActive('orderedList') ? 'primary' : 'default'}><FormatListNumberedIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Align left" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('left').run()} color={editor.isActive({ textAlign: 'left' }) ? 'primary' : 'default'}><FormatAlignLeftIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Align center" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('center').run()} color={editor.isActive({ textAlign: 'center' }) ? 'primary' : 'default'}><FormatAlignCenterIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Align right" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('right').run()} color={editor.isActive({ textAlign: 'right' }) ? 'primary' : 'default'}><FormatAlignRightIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Undo" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().undo().run()}><UndoIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Redo" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().redo().run()}><RedoIcon fontSize="small" /></IconButton></span></Tooltip>
-        <Tooltip title="Insert table" arrow><span><IconButton size="small" onClick={handleTableClick}><TableChartIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Маркированный список" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleBulletList().run()} color={editor.isActive('bulletList') ? 'primary' : 'default'}><FormatListBulletedIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Список задач" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleTaskList().run()} color={editor.isActive('taskList') ? 'primary' : 'default'}><CheckBoxOutlinedIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Нумерованный список" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().toggleOrderedList().run()} color={editor.isActive('orderedList') ? 'primary' : 'default'}><FormatListNumberedIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Выравнивание по левому краю" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('left').run()} color={editor.isActive({ textAlign: 'left' }) ? 'primary' : 'default'}><FormatAlignLeftIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Выравнивание по центру" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('center').run()} color={editor.isActive({ textAlign: 'center' }) ? 'primary' : 'default'}><FormatAlignCenterIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Выравнивание по правому краю" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().setTextAlign('right').run()} color={editor.isActive({ textAlign: 'right' }) ? 'primary' : 'default'}><FormatAlignRightIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Назад" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().undo().run()}><UndoIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Вперед" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().redo().run()}><RedoIcon fontSize="small" /></IconButton></span></Tooltip>
+        <Tooltip title="Вставить таблицу" arrow><span><IconButton size="small" onClick={handleTableClick}><TableChartIcon fontSize="small" /></IconButton></span></Tooltip>
         <Popover
           open={Boolean(tableAnchor)}
           anchorEl={tableAnchor}
@@ -519,13 +519,13 @@ const NoteEditor = () => {
               boxShadow: 3,
             }}
           >
-            <Tooltip title="Delete table" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteTable().run()}>🗑️</IconButton></span></Tooltip>
-            <Tooltip title="Add row before" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addRowBefore().run()}>⬆️</IconButton></span></Tooltip>
-            <Tooltip title="Add row after" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addRowAfter().run()}>⬇️</IconButton></span></Tooltip>
-            <Tooltip title="Delete row" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteRow().run()}>✖️ Row</IconButton></span></Tooltip>
-            <Tooltip title="Add column before" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addColumnBefore().run()}>⬅️</IconButton></span></Tooltip>
-            <Tooltip title="Add column after" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addColumnAfter().run()}>➡️</IconButton></span></Tooltip>
-            <Tooltip title="Delete column" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteColumn().run()}>✖️ Col</IconButton></span></Tooltip>
+            <Tooltip title="Удалить таблицу" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteTable().run()}>🗑️</IconButton></span></Tooltip>
+            <Tooltip title="Добавить строку перед" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addRowBefore().run()}>⬆️</IconButton></span></Tooltip>
+            <Tooltip title="Добавть строку после" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addRowAfter().run()}>⬇️</IconButton></span></Tooltip>
+            <Tooltip title="Удалить строку" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteRow().run()}>✖️ Row</IconButton></span></Tooltip>
+            <Tooltip title="Добавить столбец перед" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addColumnBefore().run()}>⬅️</IconButton></span></Tooltip>
+            <Tooltip title="Добавить столбец после" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().addColumnAfter().run()}>➡️</IconButton></span></Tooltip>
+            <Tooltip title="Удалить столбец" arrow><span><IconButton size="small" onClick={() => editor.chain().focus().deleteColumn().run()}>✖️ Col</IconButton></span></Tooltip>
           </Box>
         )}
       </Box>

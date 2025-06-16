@@ -39,8 +39,8 @@ const FolderManager = ({ mode = 'create' }) => {
         
         setLoading(false);
       } catch (err) {
-        console.error('Error loading data:', err);
-        setError('Failed to load folder data');
+        console.error('Ошибка загрузки данных:', err);
+        setError('Ошибка загрузки папки');
         setLoading(false);
       }
     };
@@ -66,7 +66,7 @@ const FolderManager = ({ mode = 'create' }) => {
       }
       navigate(-1);
     } catch (err) {
-      setError('Failed to save folder');
+      setError('Ошибка сохранения папки');
       setLoading(false);
     }
   };
@@ -75,7 +75,7 @@ const FolderManager = ({ mode = 'create' }) => {
     <Box sx={{ maxWidth: 600, mx: 'auto', p: 2 }}>
       <Paper sx={{ p: 3, borderRadius: 2 }}>
         <Typography variant="h5" component="h1" gutterBottom>
-          {mode === 'edit' ? 'Edit Folder' : 'Create New Folder'}
+          {mode === 'edit' ? 'Редактировать папку' : 'Создать новую папку'}
         </Typography>
         
         {error && (
@@ -90,7 +90,7 @@ const FolderManager = ({ mode = 'create' }) => {
             required
             fullWidth
             id="name"
-            label="Folder Name"
+            label="Название папки"
             name="name"
             value={folder.name}
             onChange={handleChange}
@@ -99,13 +99,13 @@ const FolderManager = ({ mode = 'create' }) => {
           />
           
           <FormControl fullWidth margin="normal">
-            <InputLabel id="parent-folder-label">Parent Folder (optional)</InputLabel>
+            <InputLabel id="parent-folder-label">Родительская папка (необязательно)</InputLabel>
             <Select
               labelId="parent-folder-label"
               id="parent"
               name="parent"
               value={folder.parent || ''}
-              label="Parent Folder (optional)"
+              label="Родительская папка (необязательно)"
               onChange={handleChange}
               disabled={loading}
             >
@@ -128,7 +128,7 @@ const FolderManager = ({ mode = 'create' }) => {
               onClick={() => navigate(-1)}
               disabled={loading}
             >
-              Cancel
+              Отмена
             </Button>
             <Button
               type="submit"
@@ -136,7 +136,7 @@ const FolderManager = ({ mode = 'create' }) => {
               color="primary"
               disabled={loading || !folder.name}
             >
-              {loading ? 'Saving...' : mode === 'edit' ? 'Update' : 'Create'}
+              {loading ? 'Сохранение...' : mode === 'edit' ? 'Обновить' : 'Создать'}
             </Button>
           </Box>
         </Box>

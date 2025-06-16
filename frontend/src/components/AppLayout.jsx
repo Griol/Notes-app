@@ -53,7 +53,7 @@ const AppLayout = ({ children }) => {
       
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching sidebar data:', error);
+      console.error('Ошибка при получении данных боковой панели:', error);
       setLoading(false);
     }
   };
@@ -98,7 +98,7 @@ const AppLayout = ({ children }) => {
       logoutUser();
       navigate('/login');
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('Ошибка при выходе:', error);
     }
     handleProfileMenuClose();
   };
@@ -151,7 +151,7 @@ const AppLayout = ({ children }) => {
       setConfirmDeleteFolder(null);
       fetchSidebarData();
     } catch (err) {
-      console.error('Error deleting folder:', err);
+      console.error('Ошибка удаления папки:', err);
       // Show error message
     }
   };
@@ -271,7 +271,7 @@ const AppLayout = ({ children }) => {
         >
           <TextField
             fullWidth
-            placeholder="Search..."
+            placeholder="Поиск..."
             size="small"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -302,7 +302,7 @@ const AppLayout = ({ children }) => {
           <ListItemIcon>
             <Description />
           </ListItemIcon>
-          {!isCollapsed && <ListItemText primary="All Notes" />}
+          {!isCollapsed && <ListItemText primary="Все заметки" />}
         </ListItemButton>
 
         <ListItemButton
@@ -314,7 +314,7 @@ const AppLayout = ({ children }) => {
           <ListItemIcon>
             <School />
           </ListItemIcon>
-          {!isCollapsed && <ListItemText primary="Flashcards" />}
+          {!isCollapsed && <ListItemText primary="Флешкарты" />}
         </ListItemButton>
 
 
@@ -339,7 +339,7 @@ const AppLayout = ({ children }) => {
           <ListItemIcon>
             <AccountCircle />
           </ListItemIcon>
-          {!isCollapsed && <ListItemText primary="Profile" />}
+          {!isCollapsed && <ListItemText primary="Профиль" />}
         </ListItemButton>
       </List>
     </Box>
@@ -372,12 +372,12 @@ const AppLayout = ({ children }) => {
           
           <Typography variant="h6" noWrap component="div">
             {location.pathname.includes('/folder/') 
-              ? 'Folder' 
+              ? 'Папка' 
               : location.pathname.includes('/note/') 
-                ? (location.pathname.includes('/note/new') ? 'New Note' : 'Edit Note')
+                ? (location.pathname.includes('/note/new') ? 'Новая заметка' : 'Редактировать заметку')
                 : location.pathname.includes('/tags')
-                  ? 'Tags'
-                  : 'All Notes'}
+                  ? 'Теги'
+                  : 'Все заметки'}
           </Typography>
           
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -387,7 +387,7 @@ const AppLayout = ({ children }) => {
               startIcon={<UploadIcon />}
               sx={{ mr: 1, display: { xs: 'none', md: 'flex' } }}
             >
-              Upload
+              Загрузить
             </Button>
             
             <Button
@@ -397,7 +397,7 @@ const AppLayout = ({ children }) => {
               onClick={handleCreateMenuOpen}
               sx={{ textTransform: 'none' }}
             >
-              Create
+              Создать
             </Button>
             
             <IconButton
@@ -423,13 +423,13 @@ const AppLayout = ({ children }) => {
                 <ListItemIcon>
                   <AccountCircle fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>Profile</ListItemText>
+                <ListItemText>Профиль</ListItemText>
               </MenuItem>
               <MenuItem onClick={handleLogout}>
                 <ListItemIcon>
                   <ExitToApp fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>Logout</ListItemText>
+                <ListItemText>Выход</ListItemText>
               </MenuItem>
             </Menu>
           </Box>
@@ -512,8 +512,8 @@ const AppLayout = ({ children }) => {
             <FolderIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText 
-            primary="Folder" 
-            secondary="Organize documents into folders."
+            primary="Папка" 
+            secondary="Организуйте заметки в папки."
           />
         </MenuItem>
         <MenuItem onClick={handleCreateNote}>
@@ -521,17 +521,17 @@ const AppLayout = ({ children }) => {
             <Description fontSize="small" color="secondary" />
           </ListItemIcon>
           <ListItemText 
-            primary="Document" 
-            secondary="Organize flashcards and notes into documents."
+            primary="Заметка" 
+            secondary="Создайте заметку."
           />
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={handleCreateFlashcard}>
           <ListItemIcon>
             <UploadIcon fontSize="small" color="error" />
           </ListItemIcon>
           <ListItemText 
-            primary="Upload & Annotate File" 
-            secondary="Highlight & reference PDFs, docs, etc."
+            primary="Флешкарта" 
+            secondary="Создайте флешкарту."
           />
         </MenuItem>
       </Menu>
@@ -546,19 +546,19 @@ const AppLayout = ({ children }) => {
           <ListItemIcon>
             <AddCircleOutline fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Add Nested Document" />
+          <ListItemText primary="Добавить вложенную заметку" />
         </MenuItem>
         <MenuItem onClick={handleEditFolder}>
           <ListItemIcon>
             <EditIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Rename" />
+          <ListItemText primary="Переименовать" />
         </MenuItem>
         <MenuItem onClick={handleFolderDelete}>
           <ListItemIcon>
             <DeleteOutline fontSize="small" color="error" />
           </ListItemIcon>
-          <ListItemText primary="Delete" />
+          <ListItemText primary="Удалить" />
         </MenuItem>
       </Menu>
       

@@ -124,7 +124,7 @@ const FolderTree = ({ folders, onFolderSelect, onAddFolder, onEditFolder, onDele
           folders.map(folder => renderFolderItem(folder))
         ) : (
           <ListItem>
-            <ListItemText primary="No folders found" />
+            <ListItemText primary="Папки не найдены" />
           </ListItem>
         )}
       </List>
@@ -143,19 +143,19 @@ const FolderTree = ({ folders, onFolderSelect, onAddFolder, onEditFolder, onDele
           <ListItemIcon>
             <Add fontSize="small" />
           </ListItemIcon>
-          <ListItemText>New Subfolder</ListItemText>
+          <ListItemText>Новая подпапка</ListItemText>
         </MenuItem>
         <MenuItem onClick={handleEditFolder}>
           <ListItemIcon>
             <Edit fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Rename</ListItemText>
+          <ListItemText>Переименовать</ListItemText>
         </MenuItem>
         <MenuItem onClick={handleDeleteFolder}>
           <ListItemIcon>
             <Delete fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Delete</ListItemText>
+          <ListItemText>Удалить</ListItemText>
         </MenuItem>
       </Menu>
     </>

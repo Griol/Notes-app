@@ -48,7 +48,7 @@ const LoginForm = () => {
     } catch (err) {
       setError(
         err.response?.data?.detail || 
-        'Failed to login. Please check your credentials and try again.'
+        'Ошибка входа. Проверьте данные и попробуйте снова.'
       );
       setLoading(false);
     }
@@ -76,7 +76,7 @@ const LoginForm = () => {
             <LockOutlined />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            Войти
           </Typography>
           
           {successMessage && (
@@ -97,7 +97,7 @@ const LoginForm = () => {
               required
               fullWidth
               id="username"
-              label="Username"
+              label="Имя пользователя"
               name="username"
               autoComplete="username"
               autoFocus
@@ -109,7 +109,7 @@ const LoginForm = () => {
               required
               fullWidth
               name="password"
-              label="Password"
+              label="Пароль"
               type="password"
               id="password"
               autoComplete="current-password"
@@ -123,17 +123,17 @@ const LoginForm = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Вход...' : 'Войти'}
             </Button>
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
-                  Forgot password?
+                  Забыли пароль?
                 </Link>
               </Grid>
               <Grid item>
                 <Link component={RouterLink} to="/register" variant="body2">
-                  {"Don't have an account? Sign Up"}
+                  {"Зарегистрироваться"}
                 </Link>
               </Grid>
             </Grid>

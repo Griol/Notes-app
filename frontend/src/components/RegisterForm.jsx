@@ -32,7 +32,7 @@ const RegisterForm = () => {
 
     // Basic validation
     if (formData.password !== formData.password2) {
-      setError('Passwords do not match');
+      setError('Пароли не совпадают');
       setLoading(false);
       return;
     }
@@ -40,7 +40,7 @@ const RegisterForm = () => {
     try {
       await registerUser(formData);
       // Redirect to login page after successful registration
-      navigate('/login', { state: { message: 'Registration successful! Please login with your new account.' } });
+      navigate('/login', { state: { message: 'Регистрация прошла успешно.' } });
     } catch (err) {
       const errorMessages = [];
       
@@ -62,7 +62,7 @@ const RegisterForm = () => {
       setError(
         errorMessages.length > 0 
           ? errorMessages.join('\n') 
-          : 'Registration failed. Please try again.'
+          : 'Регистрация не удалась. Попробуйте снова.'
       );
       setLoading(false);
     }
@@ -90,7 +90,7 @@ const RegisterForm = () => {
             <PersonAddOutlined />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Create Account
+            Создать аккаунт
           </Typography>
           
           {error && (
@@ -108,7 +108,7 @@ const RegisterForm = () => {
                   required
                   fullWidth
                   id="first_name"
-                  label="First Name"
+                  label="Имя"
                   value={formData.first_name}
                   onChange={handleChange}
                   autoFocus
@@ -119,7 +119,7 @@ const RegisterForm = () => {
                   required
                   fullWidth
                   id="last_name"
-                  label="Last Name"
+                  label="Фамилия"
                   name="last_name"
                   autoComplete="family-name"
                   value={formData.last_name}
@@ -131,7 +131,7 @@ const RegisterForm = () => {
                   required
                   fullWidth
                   id="username"
-                  label="Username"
+                  label="Логин"
                   name="username"
                   autoComplete="username"
                   value={formData.username}
@@ -143,7 +143,7 @@ const RegisterForm = () => {
                   required
                   fullWidth
                   id="email"
-                  label="Email Address"
+                  label="Почта"
                   name="email"
                   autoComplete="email"
                   value={formData.email}
@@ -155,7 +155,7 @@ const RegisterForm = () => {
                   required
                   fullWidth
                   name="password"
-                  label="Password"
+                  label="Пароль"
                   type="password"
                   id="password"
                   autoComplete="new-password"
@@ -168,7 +168,7 @@ const RegisterForm = () => {
                   required
                   fullWidth
                   name="password2"
-                  label="Confirm Password"
+                  label="Повторите пароль"
                   type="password"
                   id="password2"
                   value={formData.password2}
@@ -183,12 +183,12 @@ const RegisterForm = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Creating Account...' : 'Sign Up'}
+              {loading ? 'Создание аккаунта...' : 'Зарегистрироваться'}
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Link component={RouterLink} to="/login" variant="body2">
-                  Already have an account? Sign in
+                  Уже есть аккаунт? Войти
                 </Link>
               </Grid>
             </Grid>
