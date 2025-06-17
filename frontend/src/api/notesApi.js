@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Для деплоя на Render, используйте домен вашего бэкенд-сервиса
-const API_URL = 'https://notes-app-6yx2.onrender.com/api';
+const API_URL = 'http://localhost:8000/api';
 
 // Create axios instance with base URL and default headers
 const api = axios.create({
@@ -205,4 +205,17 @@ export const getFlashcardStats = (params = {}) => {
 // DailyFlashcardStat API calls (ежедневная статистика)
 export const getDailyFlashcardStats = (params = {}) => {
   return api.get('/daily-flashcard-stats/', { params });
+};
+
+// Attachment API calls
+export const uploadAttachment = (fileData) => {
+  return api.post('/attachments/', fileData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+export const deleteAttachment = (id) => {
+  return api.delete(`/attachments/${id}/`);
 }; 

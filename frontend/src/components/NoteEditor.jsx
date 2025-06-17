@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   TextField, Button, Box, Chip, Autocomplete, Paper, Typography, 
-  FormControl, InputLabel, Select, MenuItem, FormHelperText, IconButton, ListItemIcon, ListItemText, Menu
+  FormControl, InputLabel, Select, MenuItem, FormHelperText, IconButton, ListItemIcon, ListItemText, Menu, Link
 } from '@mui/material';
-import { getNote, createNote, updateNote, getTags, getFolders } from '../api/notesApi';
-import { Folder as FolderIcon, LocalOffer as TagIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
+import { getNote, createNote, updateNote, deleteNote, getFolderStructure,
+  patchNote, getTags, createTag, deleteTag, getTag, uploadAttachment, deleteAttachment } from '../api/notesApi';
+import { Folder as FolderIcon, LocalOffer as TagIcon, MoreVert as MoreVertIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -298,33 +299,38 @@ const NoteEditor = () => {
       setUploadError('Можно загружать только PDF-файлы');
       return;
     }
+
     setUploading(true);
     setUploadError(null);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('note', note.id); 
 
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/attachments/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-      if (!response.ok) {
-        throw new Error('Ошибка загрузки файла');
-      }
-      const newAttachment = await response.json();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('note', note.id);
+
+    try {
+      const newAttachment = await uploadAttachment(formData);
       setNote(prev => ({
         ...prev,
-        attachments: [...(prev.attachments || []), newAttachment]
+        attachments: [...(prev.attachments || []), newAttachment.data]
       }));
-    } catch (err) {
+    } catch (error) {
+      console.error('Ошибка загрузки файла:', error);
       setUploadError('Ошибка загрузки файла');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId) => {
+    try {
+      await deleteAttachment(attachmentId);
+      setNote(prev => ({
+        ...prev,
+        attachments: prev.attachments.filter(att => att.id !== attachmentId)
+      }));
+    } catch (error) {
+      console.error('Ошибка удаления вложения:', error);
+      // Optionally, set an error message for the user
     }
   };
 
@@ -382,30 +388,29 @@ const NoteEditor = () => {
               Прикрепить PDF
               <input
                 type="file"
-                accept="application/pdf"
                 hidden
                 onChange={handleFileChange}
+                accept="application/pdf"
               />
             </Button>
             {uploadError && <Typography color="error">{uploadError}</Typography>}
             {note.attachments && note.attachments.length > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {note.attachments.map(att => {
-                  const filename = decodeURIComponent(att.file.split('/').pop());
-                  const shortName = filename.length > 10 ? filename.slice(0, 10) + '…' : filename;
-                  return (
-                    <a
-                      key={att.id}
-                      href={att.file}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ textDecoration: 'none', color: '#6366f1', fontWeight: 500 }}
-                      title={filename}
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>Прикрепленные файлы:</Typography>
+                {note.attachments.map(att => (
+                  <Box key={att.id} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Link href={att.file} target="_blank" rel="noopener noreferrer">
+                      {att.file.split('/').pop()}
+                    </Link>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteAttachment(att.id)}
+                      sx={{ ml: 1 }}
                     >
-                      {shortName}
-                    </a>
-                  );
-                })}
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
               </Box>
             )}
           </Box>
