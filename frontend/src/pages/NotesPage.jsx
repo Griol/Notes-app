@@ -12,7 +12,7 @@ import {
   Sort, Article, Label, CalendarToday, Description, FilterList,
   DriveFileMove, ChevronRight, ExpandLess, ExpandMore
 } from '@mui/icons-material';
-import { getNotes, deleteNote, getFolder, getTags, getFolders } from '../api/notesApi';
+import { getNotes, deleteNote, getFolder, getTags, getFolders, deleteFolder } from '../api/notesApi';
 import MoveNoteDialog from '../components/MoveNoteDialog';
 
 const NotesPage = () => {
@@ -280,12 +280,15 @@ const NotesPage = () => {
   const handleDeleteFolder = async () => {
     if (selectedFolder) {
       try {
+        console.log('Attempting to delete folder in NotesPage:', selectedFolder.id);
         await deleteFolder(selectedFolder.id);
+        console.log('Folder deleted successfully in NotesPage. Refreshing data.');
         // Refresh folders and notes
         const foldersResponse = await getFolders();
         setFolders(foldersResponse.data);
         fetchNotes();
       } catch (err) {
+        console.error('Error deleting folder in NotesPage:', err);
         setError('Не удалось удалить папку');
       }
     }

@@ -5,7 +5,7 @@ import {
   FormControl, InputLabel, Select, MenuItem, FormHelperText, IconButton, ListItemIcon, ListItemText, Menu, Link
 } from '@mui/material';
 import { getNote, createNote, updateNote, deleteNote, getFolderStructure,
-  patchNote, getTags, createTag, deleteTag, getTag, uploadAttachment, deleteAttachment } from '../api/notesApi';
+  patchNote, getTags, createTag, deleteTag, getTag, uploadAttachment, deleteAttachment, getFolders } from '../api/notesApi';
 import { Folder as FolderIcon, LocalOffer as TagIcon, MoreVert as MoreVertIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import TextareaAutosize from '@mui/material/TextareaAutosize';

@@ -147,11 +147,13 @@ const AppLayout = ({ children }) => {
 
   const handleDeleteFolder = async () => {
     try {
+      console.log('Attempting to delete folder:', confirmDeleteFolder.id);
       await deleteFolder(confirmDeleteFolder.id);
+      console.log('Folder deleted successfully. Refreshing sidebar data.');
       setConfirmDeleteFolder(null);
       fetchSidebarData();
     } catch (err) {
-      console.error('Ошибка удаления папки:', err);
+      console.error('Error deleting folder in AppLayout:', err);
       // Show error message
     }
   };
