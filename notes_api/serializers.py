@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat
+from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat, NoteAttachment
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -37,6 +37,14 @@ class FolderSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class NoteAttachmentSerializer(serializers.ModelSerializer):
+    note = serializers.PrimaryKeyRelatedField(queryset=Note.objects.all())
+    class Meta:
+        model = NoteAttachment
+        fields = ['id', 'note', 'file', 'uploaded_at']
+        read_only_fields = ['id', 'uploaded_at']
+
+
 class NoteSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, required=False, read_only=True)
     tag_ids = serializers.PrimaryKeyRelatedField(
@@ -47,14 +55,15 @@ class NoteSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    attachments = NoteAttachmentSerializer(many=True, read_only=True)
     
     class Meta:
         model = Note
         fields = [
             'id', 'title', 'content', 'folder', 'tags', 'tag_ids', 
-            'tag_names', 'created_at', 'updated_at'
+            'tag_names', 'created_at', 'updated_at', 'attachments'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'attachments']
 
     def create(self, validated_data):
         # Handle tag names if provided
@@ -152,28 +161,46 @@ class FlashcardSerializer(serializers.ModelSerializer):
     tag_ids = serializers.PrimaryKeyRelatedField(
         many=True, write_only=True, required=False, queryset=Tag.objects.all(), source='tags'
     )
+    tag_names = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        write_only=True,
+        required=False
+    )
     folder = serializers.PrimaryKeyRelatedField(queryset=Folder.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = Flashcard
         fields = [
-            'id', 'question', 'answer', 'folder', 'tags', 'tag_ids', 'created_at', 'updated_at'
+            'id', 'question', 'answer', 'folder', 'tags', 'tag_ids',
+            'tag_names', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def create(self, validated_data):
-        tags = validated_data.pop('tags', [])
+        tag_names = validated_data.pop('tag_names', [])
         user = self.context['request'].user
         validated_data['user'] = user
-        flashcard = Flashcard.objects.create(**validated_data)
-        flashcard.tags.set(tags)
+        flashcard = super().create(validated_data)
+        if tag_names:
+            for tag_name in tag_names:
+                tag, created = Tag.objects.get_or_create(
+                    name=tag_name,
+                    user=user
+                )
+                flashcard.tags.add(tag)
         return flashcard
 
     def update(self, instance, validated_data):
-        tags = validated_data.pop('tags', None)
+        tag_names = validated_data.pop('tag_names', [])
         flashcard = super().update(instance, validated_data)
-        if tags is not None:
-            flashcard.tags.set(tags)
+        if tag_names:
+            flashcard.tags.clear()
+            for tag_name in tag_names:
+                tag, created = Tag.objects.get_or_create(
+                    name=tag_name,
+                    user=self.context['request'].user
+                )
+                flashcard.tags.add(tag)
         return flashcard
 
 
@@ -181,11 +208,10 @@ class FlashcardStatSerializer(serializers.ModelSerializer):
     class Meta:
         model = FlashcardStat
         fields = ['id', 'flashcard', 'date', 'result', 'created_at']
-        read_only_fields = ['id', 'date', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        validated_data['user'] = user
+        validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
 
 

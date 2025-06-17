@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat
+from .models import Tag, Folder, Note, Flashcard, FlashcardStat, DailyFlashcardStat, NoteAttachment
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -24,23 +24,25 @@ class NoteAdmin(admin.ModelAdmin):
 
 @admin.register(Flashcard)
 class FlashcardAdmin(admin.ModelAdmin):
-    list_display = ('user', 'question', 'answer', 'folder', 'created_at', 'updated_at')
-    list_filter = ('user', 'folder', 'created_at', 'updated_at', 'tags')
-    search_fields = ('question', 'user')
+    list_display = ('question', 'user', 'folder', 'created_at', 'updated_at')
+    list_filter = ('user', 'folder', 'created_at', 'updated_at')
+    search_fields = ('question', 'answer')
     raw_id_fields = ('folder',)
     filter_horizontal = ('tags',)
 
-
 @admin.register(FlashcardStat)
 class FlashcardStatAdmin(admin.ModelAdmin):
-    list_display = ('user', 'flashcard', 'date', 'result', 'created_at')
-    list_filter = ('user', 'flashcard', 'date', 'result')
-    search_fields = ('date', 'user')
-    raw_id_fields = ('flashcard',)
-
+    list_display = ('flashcard', 'user', 'date', 'result')
+    list_filter = ('user', 'date', 'result')
+    search_fields = ('flashcard__question',)
 
 @admin.register(DailyFlashcardStat)
 class DailyFlashcardStatAdmin(admin.ModelAdmin):
     list_display = ('user', 'date', 'solved_count')
     list_filter = ('user', 'date', 'solved_count')
+
+@admin.register(NoteAttachment)
+class NoteAttachmentAdmin(admin.ModelAdmin):
+    list_display = ('note', 'file', 'uploaded_at')
+    search_fields = ('note__title', 'file')
 
