@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Используем прокси Vite, путь без хоста
+// Для деплоя на Render, используйте домен вашего бэкенд-сервиса
 const API_URL = 'https://notes-app-6yx2.onrender.com/api';
 
 // Create axios instance with base URL and default headers

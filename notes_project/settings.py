@@ -25,13 +25,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-8mp%^5aw9twci^e#sb_=bsu2*wvnd5+z+c(4@eq&cc+6y(-i7i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["notes-app-6yx2.onrender.com", "localhost", "127.0.0.1"]
-
+#ALLOWED_HOSTS = []
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = ["https://notes-app-front-2agr.onrender.com"]
+#CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
